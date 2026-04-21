@@ -1,0 +1,32 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: 20px auto;
+}
+
+.container img {
+    width: 100%;
+    height: auto;
+}
+
+.dot {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: rgba(255, 0, 0, 0.7);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.dot:hover {
+    background-color: rgba(255, 0, 0, 1);
+}
