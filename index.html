@@ -5,17 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tenement Museum 7A</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script src="https://craignyu.github.io/aframep5/libraries/aframep5-v2.3.js"></script>
+    <script src="js/main.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-    <div class="container">
-        <img src="images/floorPlan.jpg" alt="Floor Plan">
-        <a href="vr1.html" class="dot" style="top: 70%; left: 77%;"></a>
-        <a href="vr2.html" class="dot" style="top: 50%; left: 60%;"></a>
-        <a href="vr3.html" class="dot" style="top: 30%; left: 85%;"></a>
-        <a href="vr4.html" class="dot" style="top: 15%; left: 30%;"></a>
-        <a href="vr5.html" class="dot" style="top: 70%; left: 10%;"></a>
+    <!-- container to hold our VR scene - make sure to give this element an ID of 'VRScene' -->
+    <a-scene id="VRScene">
+
+        <a-assets id="VRAssets">
+            <img id="room1" src="images/entrance.png">
+            <img id="room2" src="images/kitchen.png">
+            <img id="room3" src="images/closet.png">
+            <img id="room4" src="images/bed.png">
+            <img id="room5" src="images/window.png">
+            <img id="floorPlan" src="images/floorPlan.jpg">
+        </a-assets>
+
+    </a-scene>
+
+    <div id="minimap-container">
+        <img src="images/floorPlan.jpg" alt="Floor Plan" id="minimap-image">
     </div>
 </body>
 

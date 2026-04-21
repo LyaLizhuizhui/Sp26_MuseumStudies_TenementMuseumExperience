@@ -5,28 +5,26 @@ body {
     background-color: #f0f0f0;
 }
 
-.container {
-    position: relative;
-    width: 100%;
-    max-width: 1000px;
-    margin: 20px auto;
+#minimap-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    height: 150px;
+    border: 2px solid white;
+    z-index: 100;
 }
 
-.container img {
+#minimap-image {
     width: 100%;
-    height: auto;
+    height: 100%;
 }
 
 .dot {
     position: absolute;
-    width: 30px;
-    height: 30px;
-    background-color: rgba(255, 0, 0, 0.7);
+    width: 10px;
+    height: 10px;
+    background-color: red;
     border-radius: 50%;
     cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.dot:hover {
-    background-color: rgba(255, 0, 0, 1);
 }
