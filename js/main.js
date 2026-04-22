@@ -10,6 +10,9 @@ const roomObjects = {
     room5: []
 };
 
+let hudsData;
+let huds = {};
+
 function setup() {
     noCanvas();
     world = new AFrameP5.World('VRScene');
@@ -25,52 +28,62 @@ function setup() {
     createMinimap();
 }
 
+function preload() {
+    hudsData = loadJSON('huds.json');
+}
+
 function createRoomObjects() {
+    const objectIds = hudsData.objects.map(o => o.id);
 
-    roomObjects.room1.push(
-        new AFrameP5.Box({
-            x: 0, y: 1, z: -5,
+    const objects = [
+        { room: 'room1', options: { x: 0, y: 1, z: -5, red: 255, green: 0, blue: 0, id: objectIds[0] } },
+        { room: 'room2', options: { x: 0, y: 2, z: -5, red: 255, green: 0, blue: 0, id: objectIds[1] } },
+        { room: 'room2', options: { x: 1, y: 0, z: -4, red: 255, green: 255, blue: 0, id: objectIds[2] } },
+        { room: 'room3', options: { x: 1, y: 1, z: 5, red: 255, green: 0, blue: 255, id: objectIds[3] } },
+        { room: 'room4', options: { x: 3, y: -1, z: -5, red: 0, green: 0, blue: 0, id: objectIds[4] } },
+        { room: 'room4', options: { x: -3, y: 4, z: 5, red: 0, green: 255, blue: 0, id: objectIds[5] } },
+        { room: 'room5', options: { x: 0, y: 2, z: 5, red: 255, green: 255, blue: 0, id: objectIds[6] } }
+    ];
+
+    objects.forEach(objData => {
+        const box = new AFrameP5.Box({
+            ...objData.options,
             width: 1, height: 1, depth: 1,
-            red: 255, green: 0, blue: 0
-        })
-    );
+            enterFunction: function (theBox) {
+                theBox.setScale(1.2, 1.2, 1.2);
+            },
+            leaveFunction: function (theBox) {
+                theBox.setScale(1, 1, 1);
+            }
+        });
+        box.myId = objData.options.id;
+        roomObjects[objData.room].push(box);
 
-    roomObjects.room2.push(
-        new AFrameP5.Box({
-            x: 0, y: 1, z: -5,
-            width: 1, height: 1, depth: 1,
-            red: 255, green: 0, blue: 0
-        })
-    );
+        const hudData = hudsData.objects.find(o => o.id === objData.options.id);
+        let hudText = hudData.text;
+        let hudHeight = 2;
+        // Add "color: black;" so it stands out against the light grey plane
+        let hudContent = `value: ${hudText}; color: black; align: center; wrapCount: 30;`;
 
-    roomObjects.room3.push(
-        new AFrameP5.Cylinder({
-            x: -2, y: 1, z: -5,
-            radius: 0.5, height: 2,
-            red: 0, green: 0, blue: 255
-        })
-    );
+        const hud = new AFrameP5.Plane({
+            x: objData.options.x + 2,
+            y: objData.options.y,
+            z: objData.options.z,
+            width: 2.5,
+            height: hudHeight,
+            red: 200, green: 200, blue: 200,
+            text: hudContent
+        });
+        huds[objData.options.id] = hud;
 
-    roomObjects.room4.push(
-        new AFrameP5.Box({
-            x: 0, y: 1, z: -5,
-            width: 1, height: 1, depth: 1,
-            red: 255, green: 0, blue: 0
-        })
-    );
-
-    roomObjects.room5.push(
-        new AFrameP5.Box({
-            x: 0, y: 1, z: -5,
-            width: 1, height: 1, depth: 1,
-            red: 255, green: 0, blue: 0
-        })
-    );
+    });
 
     for (const room in roomObjects) {
         roomObjects[room].forEach(obj => {
             obj.hide();
             world.add(obj);
+            huds[obj.myId].hide();
+            world.add(huds[obj.myId]);
         });
     }
 }
@@ -78,12 +91,14 @@ function createRoomObjects() {
 function showRoomObjects(room) {
     for (const obj of roomObjects[room]) {
         obj.show();
+        huds[obj.myId].show();
     }
 }
 
 function hideRoomObjects(room) {
     for (const obj of roomObjects[room]) {
         obj.hide();
+        huds[obj.myId].hide();
     }
 }
 
