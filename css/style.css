@@ -5,6 +5,50 @@ body {
     background-color: #f0f0f0;
 }
 
+#ui-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    z-index: 9999;
+    text-align: center;
+}
+
+#ui-layer h1 {
+    margin: 0;
+    font-size: clamp(24px, 3vw, 40px);
+    letter-spacing: 2px;
+}
+
+#ui-layer h2 {
+    margin: 0;
+    font-size: clamp(18px, 2.4vw, 28px);
+    letter-spacing: 1px;
+}
+
+#btn-start {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    background: transparent;
+    color: #ffffff;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+#btn-start:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
 #minimap-container {
     position: fixed;
     bottom: 20px;

@@ -1,11 +1,11 @@
 const CONFIG = {
     rooms: [
-        { name: "Room 1", position: { x: 20, y: 9, z: 13 } },
-        { name: "Room 2", position: { x: 13, y: 9, z: 11 } },
-        { name: "Room 3", position: { x: -3, y: 9, z: 7 } }
+        { name: "Room 1", position: { x: 20, y: 0, z: 13 } },
+        { name: "Room 2", position: { x: 11, y: 0, z: 9 } },
+        { name: "Room 3", position: { x: -3, y: 0, z: 7 } }
     ],
     modelStart: { x: 13, y: -40, z: 11 }, // Entrance animation start (raise Y to drop in)
-    modelEnd: { x: 13, y: 9, z: 11 }, // Resting position (Room 2 center)
+    modelEnd: { x: 11, y: 8, z: 9 }, // Resting position (Room 2 center)
     animDuration: 4200, // Drop-and-spin duration in milliseconds
     hudTitlePosition: { x: 0, y: 0.35, z: -1.2 },
     hudTitleScale: { x: 1, y: 1, z: 1 },
@@ -15,6 +15,9 @@ const CONFIG = {
     hudPlayScale: { x: 0.5, y: 0.5, z: 0.5 },
     hudColor: "#ffffff",
     cameraStartPosition: { x: 0, y: 0, z: 0 },
+    cameraRotStart: "-90 0 0",
+    cameraRotEnd: "0 0 0",
+    cameraRotationInputs: { x: -90, y: 0, z: 0 },
     triangleColor: "#ffcc00",
     gridSize: { width: 60, height: 60 },
     gridPosition: { x: 0, y: 0, z: 0 },
@@ -37,19 +40,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const camera = ensureCamera(scene);
     const cursor = ensureCursor(scene);
-    const hud = createHud(camera);
+    const ui = getUiElements();
 
     injectDebugHelpers(scene);
-    setupDebugPanel(model, camera, hud);
+    setupDebugPanel(model, camera, ui);
 
-    setStateLoading(model, hud, camera);
+    setStateLoading(model, ui, camera);
 
     model.addEventListener("model-loaded", () => {
-        setStateB1(model, hud, camera);
+        if (model.object3D) {
+            model.object3D.userData.solid = true;
+        }
+        setStateB1(model, ui, camera);
     });
 
+    const animationState = { modelDone: false, cameraDone: false };
+
     model.addEventListener("animationcomplete__position", () => {
-        setStateInteractive(camera);
+        animationState.modelDone = true;
+        if (animationState.modelDone && animationState.cameraDone) {
+            setStateInteractive(camera);
+        }
+    });
+
+    camera.addEventListener("animationcomplete__rotation", () => {
+        animationState.cameraDone = true;
+        if (animationState.modelDone && animationState.cameraDone) {
+            setStateInteractive(camera);
+        }
     });
 });
 
@@ -58,6 +76,7 @@ function ensureCamera(scene) {
     if (!camera) {
         camera = document.createElement("a-camera");
         camera.setAttribute("position", toVec3String(CONFIG.cameraStartPosition));
+        camera.setAttribute("rotation", CONFIG.cameraRotStart);
         scene.appendChild(camera);
     }
     return camera;
@@ -73,68 +92,71 @@ function ensureCursor(scene) {
     return cursor;
 }
 
-function createHud(camera) {
-    const titleText = document.createElement("a-text");
-    titleText.setAttribute("value", "TENEMENT MUSEUM 7A");
-    titleText.setAttribute("color", CONFIG.hudColor);
-    titleText.setAttribute("align", "center");
-    titleText.setAttribute("position", toVec3String(CONFIG.hudTitlePosition));
-    titleText.setAttribute("scale", toVec3String(CONFIG.hudTitleScale));
-    titleText.setAttribute("visible", "false");
-    camera.appendChild(titleText);
-
-    const loadingText = document.createElement("a-text");
-    loadingText.setAttribute("value", "LOADING...");
-    loadingText.setAttribute("color", CONFIG.hudColor);
-    loadingText.setAttribute("align", "center");
-    loadingText.setAttribute("position", toVec3String(CONFIG.hudLoadingPosition));
-    loadingText.setAttribute("scale", toVec3String(CONFIG.hudLoadingScale));
-    camera.appendChild(loadingText);
-
-    const playButton = document.createElement("a-triangle");
-    playButton.setAttribute("color", CONFIG.triangleColor);
-    playButton.setAttribute("position", toVec3String(CONFIG.hudPlayPosition));
-    playButton.setAttribute("scale", toVec3String(CONFIG.hudPlayScale));
-    playButton.setAttribute("vertex-a", "0 0.5 0");
-    playButton.setAttribute("vertex-b", "-0.4 -0.3 0");
-    playButton.setAttribute("vertex-c", "0.4 -0.3 0");
-    playButton.setAttribute("visible", "false");
-    camera.appendChild(playButton);
-
-    return { titleText, loadingText, playButton };
+function getUiElements() {
+    return {
+        layer: document.querySelector("#ui-layer"),
+        title: document.querySelector("#title"),
+        loading: document.querySelector("#text-loading"),
+        button: document.querySelector("#btn-start")
+    };
 }
 
-function setStateLoading(model, hud, camera) {
+function setStateLoading(model, ui, camera) {
     model.setAttribute("visible", "false");
     model.setAttribute("position", toVec3String(CONFIG.modelStart));
     model.setAttribute("rotation", "0 0 0");
-    hud.loadingText.setAttribute("visible", "true");
-    hud.titleText.setAttribute("visible", "false");
-    hud.playButton.setAttribute("visible", "false");
+    if (ui.layer) {
+        ui.layer.style.display = "flex";
+    }
+    if (ui.loading) {
+        ui.loading.style.display = "block";
+    }
+    if (ui.title) {
+        ui.title.style.display = "none";
+    }
+    if (ui.button) {
+        ui.button.style.display = "none";
+    }
+    camera.setAttribute("rotation", CONFIG.cameraRotStart);
     setCameraControls(camera, false);
 }
 
-function setStateB1(model, hud, camera) {
-    hud.loadingText.setAttribute("visible", "false");
-    hud.titleText.setAttribute("visible", "true");
-    hud.playButton.setAttribute("visible", "true");
+function setStateB1(model, ui, camera) {
+    if (ui.layer) {
+        ui.layer.style.display = "flex";
+    }
+    if (ui.loading) {
+        ui.loading.style.display = "none";
+    }
+    if (ui.title) {
+        ui.title.style.display = "block";
+    }
+    if (ui.button) {
+        ui.button.style.display = "inline-flex";
+    }
     model.setAttribute("visible", "false");
     model.setAttribute("position", toVec3String(CONFIG.modelStart));
     model.setAttribute("rotation", "0 0 0");
+    camera.setAttribute("rotation", CONFIG.cameraRotStart);
+    attachEntranceAnimations(model, camera);
     setCameraControls(camera, false);
 
-    hud.playButton.onclick = null;
-    hud.playButton.addEventListener("click", () => {
-        setStateB2(model, hud, camera);
-    }, { once: true });
+    if (ui.button) {
+        ui.button.onclick = null;
+        ui.button.addEventListener("click", () => {
+            setStateB2(model, ui, camera);
+        }, { once: true });
+    }
 }
 
-function setStateB2(model, hud, camera) {
-    hud.titleText.setAttribute("visible", "false");
-    hud.playButton.setAttribute("visible", "false");
+function setStateB2(model, ui, camera) {
+    if (ui.layer) {
+        ui.layer.style.display = "none";
+    }
     model.setAttribute("visible", "true");
     setCameraControls(camera, false);
-    startEntranceAnimation(model);
+    model.emit("trigger-entrance");
+    camera.emit("trigger-entrance");
 }
 
 function setStateInteractive(camera) {
@@ -181,7 +203,7 @@ function createAxisLine(start, end, color) {
     return line;
 }
 
-function setupDebugPanel(model, camera, hud) {
+function setupDebugPanel(model, camera, ui) {
     if (!window.Pane) {
         return;
     }
@@ -209,33 +231,40 @@ function setupDebugPanel(model, camera, hud) {
 
     const actions = pane.addFolder({ title: "States" });
     actions.addButton({ title: "Back to B1" }).on("click", () => {
-        setStateB1(model, hud, camera);
+        setStateB1(model, ui, camera);
     });
 
     actions.addButton({ title: "Start B2" }).on("click", () => {
         model.setAttribute("position", toVec3String(CONFIG.modelStart));
         model.setAttribute("rotation", "0 0 0");
-        setStateB2(model, hud, camera);
+        camera.setAttribute("rotation", CONFIG.cameraRotStart);
+        attachEntranceAnimations(model, camera);
+        setStateB2(model, ui, camera);
     });
 
     actions.addButton({ title: "Force C" }).on("click", () => {
-        snapToEnd(model);
+        cancelEntranceAnimations(model, camera);
+        snapToEnd(model, camera);
         setStateInteractive(camera);
+    });
+
+    const cameraRotation = pane.addFolder({ title: "Camera Rotation" });
+    cameraRotation.addBinding(CONFIG.cameraRotationInputs, "x", { min: -180, max: 180, step: 1 });
+    cameraRotation.addBinding(CONFIG.cameraRotationInputs, "y", { min: -180, max: 180, step: 1 });
+    cameraRotation.addBinding(CONFIG.cameraRotationInputs, "z", { min: -180, max: 180, step: 1 });
+    cameraRotation.addButton({ title: "Apply Rotation" }).on("click", () => {
+        camera.setAttribute("rotation", toVec3String(CONFIG.cameraRotationInputs));
     });
 }
 
-function startEntranceAnimation(model) {
-    model.removeAttribute("animation__position");
-    model.removeAttribute("animation__rotation");
-    model.setAttribute("position", toVec3String(CONFIG.modelStart));
-    model.setAttribute("rotation", "0 0 0");
-
+function attachEntranceAnimations(model, camera) {
     model.setAttribute("animation__position", {
         property: "position",
         from: toVec3String(CONFIG.modelStart),
         to: toVec3String(CONFIG.modelEnd),
         dur: CONFIG.animDuration,
-        easing: "easeInOutCubic"
+        easing: "easeInOutCubic",
+        startEvents: "trigger-entrance"
     });
 
     model.setAttribute("animation__rotation", {
@@ -243,15 +272,31 @@ function startEntranceAnimation(model) {
         from: "0 0 0",
         to: "0 360 0",
         dur: CONFIG.animDuration,
-        easing: "easeInOutCubic"
+        easing: "easeInOutCubic",
+        startEvents: "trigger-entrance"
+    });
+
+    camera.setAttribute("animation__rotation", {
+        property: "rotation",
+        from: CONFIG.cameraRotStart,
+        to: CONFIG.cameraRotEnd,
+        dur: CONFIG.animDuration,
+        easing: "easeInOutCubic",
+        startEvents: "trigger-entrance"
     });
 }
 
-function snapToEnd(model) {
+function cancelEntranceAnimations(model, camera) {
     model.removeAttribute("animation__position");
     model.removeAttribute("animation__rotation");
+    camera.removeAttribute("animation__rotation");
+    attachEntranceAnimations(model, camera);
+}
+
+function snapToEnd(model, camera) {
     model.setAttribute("position", toVec3String(CONFIG.modelEnd));
     model.setAttribute("rotation", "0 360 0");
+    camera.setAttribute("rotation", CONFIG.cameraRotEnd);
 }
 
 function toVec3String(vec) {
