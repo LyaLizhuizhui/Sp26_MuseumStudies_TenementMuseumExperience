@@ -1,10 +1,13 @@
 const CONFIG = {
     rooms: [
-        { name: "Room 1", position: { x: 20, y: 0, z: 13 } },
-        { name: "Room 2", position: { x: 11, y: 0, z: 9 } },
-        { name: "Room 3", position: { x: -3, y: 0, z: 7 } }
+        // { name: "Room 1", position: { x: 20, y: 0, z: 13 } },
+        // { name: "Room 2", position: { x: 11, y: 0, z: 9 } },
+        // { name: "Room 3", position: { x: -3, y: 0, z: 7 } }
+        { name: "Room 1", position: { x: -10, y: 1, z: 5 } },
+        { name: "Room 2", position: { x: 0, y: 1, z: 5 } },
+        { name: "Room 3", position: { x: 10, y: 1, z: 4 } }
     ],
-    modelStart: { x: 13, y: -40, z: 11 },
+    modelStart: { x: 0, y: 8, z: -40 },
     modelEnd: { x: 11, y: 8, z: 9 },
     animDuration: 4200,
     hudTitlePosition: { x: 0, y: 0.35, z: -1.2 },
@@ -15,7 +18,7 @@ const CONFIG = {
     hudPlayScale: { x: 0.5, y: 0.5, z: 0.5 },
     hudColor: "#ffffff",
     triangleColor: "#ffcc00",
-    gridSize: { width: 60, height: 60 },
+    gridSize: { width: 5, height: 5 },
     gridPosition: { x: 0, y: 0, z: 0 },
     gridRotation: { x: -90, y: 0, z: 0 },
     gridColor: "#444444",
@@ -34,6 +37,8 @@ function setup() {
     world = new AFrameP5.World("VRScene");
     ui = getUiElements();
     world.setFlying(false);
+
+    world.camera.cameraEl.removeAttribute('wasd-controls');
 
     apartment = new AFrameP5.GLTF({
         asset: "apartment",
@@ -154,7 +159,10 @@ function injectDebugHelpers() {
     const axes = new AFrameP5.Box({
         x: CONFIG.axesOrigin.x,
         y: CONFIG.axesOrigin.y,
-        z: CONFIG.axesOrigin.z
+        z: CONFIG.axesOrigin.z,
+        width: 0.01,
+        height: 0.01,
+        depth: 0.01
     });
     axes.tag.appendChild(createAxisLine({ x: 0, y: 0, z: 0 }, { x: CONFIG.axesLength, y: 0, z: 0 }, "#ff0000"));
     axes.tag.appendChild(createAxisLine({ x: 0, y: 0, z: 0 }, { x: 0, y: CONFIG.axesLength, z: 0 }, "#00ff00"));
@@ -174,18 +182,27 @@ function createAxisLine(start, end, color) {
 
 function createRoomMarkers() {
     roomMarkers = CONFIG.rooms.map((room) => {
-        const marker = new AFrameP5.Cylinder({
+        const marker = new AFrameP5.Box({
             x: room.position.x,
             y: room.position.y,
             z: room.position.z,
-            radius: 0.35,
-            height: 0.25,
-            color: "#ff4444",
+            width: 1,
+            height: 1,
+            depth: 1,
+            red: 255,
+            green: 0,
+            blue: 0,
             clickFunction: () => {
                 world.slideToObject(marker, 700);
-            }
+            },
+            enterFunction: function () {
+                marker.setScale(1.2, 1.2, 1.2);
+            },
+            leaveFunction: function () {
+                marker.setScale(1, 1, 1);
+            },
         });
-        marker.tag.setAttribute("material", { depthTest: false });
+        //marker.tag.setAttribute("material", { depthTest: false });
         world.add(marker);
         return marker;
     });
@@ -250,8 +267,8 @@ function attachEntranceAnimations() {
     // Apartment rotation animation
     apartment.tag.setAttribute("animation__rotation", {
         property: "rotation",
-        from: "0 0 0",
-        to: "0 360 0",
+        from: "100 15 0",
+        to: "0 375 0",
         dur: CONFIG.animDuration,
         easing: "easeInOutCubic",
         startEvents: "trigger-entrance"
@@ -260,6 +277,7 @@ function attachEntranceAnimations() {
     // Camera rotation animation
     const cam = document.querySelector("#main-camera");
     if (cam) {
+        console.log("Camera found");
         cam.setAttribute("animation__rotation", {
             property: "rotation",
             from: "-90 0 0",
@@ -289,4 +307,8 @@ function snapToEnd() {
 
 function toVec3String(vec) {
     return `${vec.x} ${vec.y} ${vec.z}`;
+}
+
+function draw() {
+
 }
