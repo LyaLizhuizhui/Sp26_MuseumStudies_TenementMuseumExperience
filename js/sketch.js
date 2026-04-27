@@ -1,11 +1,15 @@
 const CONFIG = {
     rooms: [
-        // { name: "Room 1", position: { x: 20, y: 0, z: 13 } },
-        // { name: "Room 2", position: { x: 11, y: 0, z: 9 } },
-        // { name: "Room 3", position: { x: -3, y: 0, z: 7 } }
         { name: "Room 1", position: { x: -10, y: 1, z: 5 } },
         { name: "Room 2", position: { x: 0, y: 1, z: 5 } },
         { name: "Room 3", position: { x: 10, y: 1, z: 4 } }
+    ],
+    interactivePanels: [
+        { position: { x: -5.5, y: -2, z: 6 }, text: "Panel 1 Info", hasImage: true, hasAudio: true },
+        { position: { x: 3, y: -2, z: 7 }, text: "Panel 2 Info", hasImage: true, hasAudio: false },
+        { position: { x: 18, y: -1, z: 11 }, text: "Panel 3 Info", hasImage: false, hasAudio: true },
+        { position: { x: 16, y: 0, z: -1 }, text: "Panel 4 Info", hasImage: false, hasAudio: false },
+        { position: { x: -11, y: 0, z: 12 }, text: "Panel 5 Info", hasImage: true, hasAudio: true }
     ],
     modelStart: { x: 0, y: 8, z: -40 },
     modelEnd: { x: 11, y: 8, z: 9 },
@@ -32,13 +36,37 @@ let roomMarkers = [];
 let ui;
 const animationState = { modelDone: false };
 
+let panelGraphics = [];
+let panelTextures = []; // NEW: Array to hold the AFrameP5 dynamic textures
+let panelBoxes = [];
+let panelPlanes = [];
+let placeholderImage;
+const AUDIO_PLACEHOLDER_SRC = 'assets/audios/bell.wav';
+
+function preload() {
+    placeholderImage = loadImage('assets/images/placeholderImage.png');
+}
+
 function setup() {
     noCanvas();
     world = new AFrameP5.World("VRScene");
     ui = getUiElements();
-    world.setFlying(false);
 
-    world.camera.cameraEl.removeAttribute('wasd-controls');
+    // Create graphics buffers, textures, and assign initial content
+    for (let i = 0; i < CONFIG.interactivePanels.length; i++) {
+        const buffer = createGraphics(512, 512);
+        panelGraphics.push(buffer);
+
+        // NEW: Create the AFrameP5 dynamic texture directly from the buffer
+        const texture = world.createDynamicTextureFromCreateGraphics(buffer);
+        panelTextures.push(texture);
+
+        // Initialize Audio Object
+        CONFIG.interactivePanels[i].audioElement = new Audio(AUDIO_PLACEHOLDER_SRC);
+        CONFIG.interactivePanels[i].audioElement.loop = true;
+
+        drawPanelBuffer(i);
+    }
 
     apartment = new AFrameP5.GLTF({
         asset: "apartment",
@@ -50,6 +78,7 @@ function setup() {
 
     injectDebugHelpers();
     createRoomMarkers();
+    createInteractivePanels();
     setupDebugPanel();
 
     setStateLoading();
@@ -57,7 +86,6 @@ function setup() {
     apartment.tag.addEventListener("model-loaded", () => {
         if (apartment.tag.object3D) {
             apartment.tag.object3D.userData.solid = true;
-            // Force shaders to compile even when the model is at y: -40 out of view
             apartment.tag.object3D.traverse((node) => {
                 if (node.isMesh) {
                     node.frustumCulled = false;
@@ -73,6 +101,33 @@ function setup() {
             setStateInteractive();
         }
     });
+}
+
+function drawPanelBuffer(index) {
+    const buffer = panelGraphics[index];
+    const config = CONFIG.interactivePanels[index];
+
+    buffer.background(0);
+    buffer.textAlign(CENTER, CENTER);
+    buffer.textSize(32);
+
+    buffer.fill(255);
+    buffer.text(config.text, buffer.width / 2, 50);
+
+    if (config.hasImage && placeholderImage) {
+        buffer.image(placeholderImage, buffer.width / 2 - 100, 100, 200, 200);
+    }
+
+    buffer.fill(255);
+    buffer.text("More details about this artifact.", buffer.width / 2, 350);
+
+    // Force update if the plane's material has already been constructed
+    if (panelPlanes[index] && panelPlanes[index].tag.getObject3D('mesh')) {
+        const material = panelPlanes[index].tag.getObject3D('mesh').material;
+        if (material && material.map) {
+            material.map.needsUpdate = true;
+        }
+    }
 }
 
 function getUiElements() {
@@ -93,7 +148,6 @@ function setStateLoading() {
     if (ui.title) ui.title.style.display = "none";
     if (ui.button) ui.button.style.display = "none";
 
-    // Disable camera look controls while loading
     const cam = document.querySelector("#main-camera");
     if (cam) {
         cam.setAttribute("look-controls", "enabled", false);
@@ -109,7 +163,6 @@ function setStateB1() {
     apartment.setPosition(CONFIG.modelStart.x, CONFIG.modelStart.y, CONFIG.modelStart.z);
     apartment.setRotation(0, 0, 0);
 
-    // Pre-attach the A-Frame animations so they are ready before the user clicks
     attachEntranceAnimations();
 
     if (ui.button) {
@@ -123,7 +176,6 @@ function setStateB1() {
 function setStateB2() {
     if (ui.layer) ui.layer.style.display = "none";
 
-    // Trigger animations
     apartment.tag.emit("trigger-entrance");
 
     const cam = document.querySelector("#main-camera");
@@ -133,7 +185,6 @@ function setStateB2() {
 }
 
 function setStateInteractive() {
-    // Restore camera controls on completion
     const cam = document.querySelector("#main-camera");
     if (cam) {
         cam.setAttribute("look-controls", "enabled", true);
@@ -202,10 +253,81 @@ function createRoomMarkers() {
                 marker.setScale(1, 1, 1);
             },
         });
-        //marker.tag.setAttribute("material", { depthTest: false });
         world.add(marker);
         return marker;
     });
+}
+
+function createInteractivePanels() {
+    CONFIG.interactivePanels.forEach((panelConfig, index) => {
+        // NEW: Refactored to use the AFrameP5 dynamic texture properties directly
+        const plane = new AFrameP5.Plane({
+            x: panelConfig.position.x,
+            y: panelConfig.position.y + 2,
+            z: panelConfig.position.z,
+            width: 2,
+            height: 3,
+            asset: panelTextures[index],
+            dynamicTexture: true,
+            dynamicTextureWidth: 142,
+            dynamicTextureHeight: 256,
+        });
+
+        plane.tag.setAttribute('visible', false);
+
+        // The wrapper handles the core material creation, but we still need 
+        // to ensure the plane is double-sided so it doesn't disappear from behind.
+        const currentMaterial = plane.tag.getAttribute('material') || {};
+        currentMaterial.side = 'double';
+        plane.tag.setAttribute('material', currentMaterial);
+
+        world.add(plane);
+        panelPlanes.push(plane);
+
+        let isPanelVisible = false;
+
+        const box = new AFrameP5.Box({
+            x: panelConfig.position.x,
+            y: panelConfig.position.y,
+            z: panelConfig.position.z,
+            width: 0.2,
+            height: 0.2,
+            depth: 0.2,
+            red: 0,
+            green: 0,
+            blue: 255,
+            enterFunction: () => box.setScale(1.2, 1.2, 1.2),
+            leaveFunction: () => box.setScale(1, 1, 1),
+            clickFunction: () => {
+                isPanelVisible = !isPanelVisible;
+                plane.tag.setAttribute('visible', isPanelVisible);
+
+                if (isPanelVisible) {
+                    console.log(`Panel ${index + 1} opened.`);
+                    if (panelConfig.hasAudio && panelConfig.audioElement) {
+                        panelConfig.audioElement.currentTime = 0;
+                        panelConfig.audioElement.play().catch(e => console.warn("Audio play blocked:", e));
+                    }
+                } else {
+                    console.log(`Panel ${index + 1} closed.`);
+                    if (panelConfig.audioElement) {
+                        panelConfig.audioElement.pause();
+                    }
+                }
+            }
+        });
+        world.add(box);
+        panelBoxes.push(box);
+    });
+}
+
+function updatePanelPosition(index) {
+    const config = CONFIG.interactivePanels[index];
+    const box = panelBoxes[index];
+    const plane = panelPlanes[index];
+
+    if (box) box.setPosition(config.position.x, config.position.y, config.position.z);
+    if (plane) plane.setPosition(config.position.x, config.position.y, config.position.z + 0.6);
 }
 
 function setupDebugPanel() {
@@ -214,19 +336,20 @@ function setupDebugPanel() {
     }
 
     const pane = new window.Pane({ title: "A-Frame Debug" });
-    const modelStart = pane.addFolder({ title: "Model Start" });
+
+    const modelStart = pane.addFolder({ title: "Model Start", expanded: false });
     modelStart.addBinding(CONFIG.modelStart, "x", { step: 0.1 });
     modelStart.addBinding(CONFIG.modelStart, "y", { step: 0.1 });
     modelStart.addBinding(CONFIG.modelStart, "z", { step: 0.1 });
 
-    const modelEnd = pane.addFolder({ title: "Model End" });
+    const modelEnd = pane.addFolder({ title: "Model End", expanded: false });
     modelEnd.addBinding(CONFIG.modelEnd, "x", { step: 0.1 });
     modelEnd.addBinding(CONFIG.modelEnd, "y", { step: 0.1 });
     modelEnd.addBinding(CONFIG.modelEnd, "z", { step: 0.1 });
 
     pane.addBinding(CONFIG, "animDuration", { min: 200, max: 12000, step: 100 });
 
-    const rooms = pane.addFolder({ title: "Rooms" });
+    const rooms = pane.addFolder({ title: "Rooms", expanded: false });
     CONFIG.rooms.forEach((room) => {
         const folder = rooms.addFolder({ title: room.name });
         folder.addBinding(room.position, "x", { step: 0.1 });
@@ -234,7 +357,7 @@ function setupDebugPanel() {
         folder.addBinding(room.position, "z", { step: 0.1 });
     });
 
-    const actions = pane.addFolder({ title: "States" });
+    const actions = pane.addFolder({ title: "States", expanded: false });
     actions.addButton({ title: "Back to B1" }).on("click", () => {
         setStateB1();
     });
@@ -251,10 +374,28 @@ function setupDebugPanel() {
         snapToEnd();
         setStateInteractive();
     });
+
+    const panelsFolder = pane.addFolder({ title: "Interactive Panels" });
+    CONFIG.interactivePanels.forEach((panelConfig, index) => {
+        const f = panelsFolder.addFolder({ title: `Panel ${index + 1}`, expanded: false });
+
+        f.addBinding(panelConfig.position, "x", { step: 0.1 }).on('change', () => updatePanelPosition(index));
+        f.addBinding(panelConfig.position, "y", { step: 0.1 }).on('change', () => updatePanelPosition(index));
+        f.addBinding(panelConfig.position, "z", { step: 0.1 }).on('change', () => updatePanelPosition(index));
+
+        f.addBinding(panelConfig, "hasImage").on('change', () => {
+            drawPanelBuffer(index);
+        });
+
+        f.addBinding(panelConfig, "hasAudio").on('change', () => {
+            if (!panelConfig.hasAudio && panelConfig.audioElement) {
+                panelConfig.audioElement.pause();
+            }
+        });
+    });
 }
 
 function attachEntranceAnimations() {
-    // Apartment position animation
     apartment.tag.setAttribute("animation__position", {
         property: "position",
         from: toVec3String(CONFIG.modelStart),
@@ -264,7 +405,6 @@ function attachEntranceAnimations() {
         startEvents: "trigger-entrance"
     });
 
-    // Apartment rotation animation
     apartment.tag.setAttribute("animation__rotation", {
         property: "rotation",
         from: "100 15 0",
@@ -274,10 +414,8 @@ function attachEntranceAnimations() {
         startEvents: "trigger-entrance"
     });
 
-    // Camera rotation animation
     const cam = document.querySelector("#main-camera");
     if (cam) {
-        console.log("Camera found");
         cam.setAttribute("animation__rotation", {
             property: "rotation",
             from: "-90 0 0",
