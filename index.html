@@ -12,9 +12,7 @@
     <script src="js/sketch.js"></script>
     <link rel="stylesheet" href="css/style.css">
     <script type="module">
-        // import the library as a module
         import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
-        // then, add it to the "browser" so that it can be used as "global."
         window.Pane = Pane;
     </script>
 </head>
@@ -30,9 +28,10 @@
 
         <a-assets id="VRAssets">
             <img id="placeholderImage" src="images/placeholderImage.png">
+            <a-asset-item id="apartment" src="7A/scene.gltf"></a-asset-item>
         </a-assets>
 
-        <a-gltf-model id="apartment" src="7A/scene.gltf"></a-gltf-model>
+        <a-entity id="main-camera" camera look-controls position="0 1.6 0"></a-entity>
 
     </a-scene>
 
