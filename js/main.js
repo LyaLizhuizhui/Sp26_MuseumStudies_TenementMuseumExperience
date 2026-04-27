@@ -20,12 +20,15 @@ function setup() {
     sky = new AFrameP5.Sky({
         asset: currentRoom
     });
-    world.add(sky);
+    //world.add(sky);
 
     createRoomObjects();
     showRoomObjects(currentRoom);
-    world.setFlying(false);
-    createMinimap();
+    //world.setFlying(false);
+    //createMinimap();
+
+    const apartment = document.querySelector('#apartment');
+    apartment.setAttribute('position', '20 9 13');
 }
 
 function preload() {
@@ -141,8 +144,3 @@ function createMinimap() {
         minimapContainer.appendChild(dot);
     });
 }
-
-function draw() {
-}
-
-

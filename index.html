@@ -8,8 +8,14 @@
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script src="https://craignyu.github.io/aframep5/libraries/aframep5-v2.3.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/sketch.js"></script>
     <link rel="stylesheet" href="css/style.css">
+    <script type="module">
+        // import the library as a module
+        import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
+        // then, add it to the "browser" so that it can be used as "global."
+        window.Pane = Pane;
+    </script>
 </head>
 
 <body>
@@ -17,20 +23,16 @@
     <a-scene id="VRScene">
 
         <a-assets id="VRAssets">
-            <img id="room1" src="images/entrance.png">
-            <img id="room2" src="images/kitchen.png">
-            <img id="room3" src="images/closet.png">
-            <img id="room4" src="images/bed.png">
-            <img id="room5" src="images/window.png">
-            <img id="floorPlan" src="images/floorPlan.jpg">
             <img id="placeholderImage" src="images/placeholderImage.png">
         </a-assets>
 
+        <a-gltf-model id="apartment" src="7A/scene.gltf"></a-gltf-model>
+
     </a-scene>
 
-    <div id="minimap-container">
+    <!--div id="minimap-container">
         <img src="images/floorPlan.jpg" alt="Floor Plan" id="minimap-image">
-    </div>
+    </div-->
 </body>
 
 </html>
