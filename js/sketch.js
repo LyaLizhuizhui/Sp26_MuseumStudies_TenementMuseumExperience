@@ -5,11 +5,11 @@ const CONFIG = {
         { name: "Room 3", position: { x: 10, y: 1, z: 4 } }
     ],
     interactivePanels: [
-        { position: { x: -5.5, y: -2, z: 6 }, text: "Panel 1 Info", hasImage: true, hasAudio: true },
-        { position: { x: 3, y: -2, z: 7 }, text: "Panel 2 Info", hasImage: true, hasAudio: false },
-        { position: { x: 18, y: -1, z: 11 }, text: "Panel 3 Info", hasImage: false, hasAudio: true },
-        { position: { x: 16, y: 0, z: -1 }, text: "Panel 4 Info", hasImage: false, hasAudio: false },
-        { position: { x: -11, y: 0, z: 12 }, text: "Panel 5 Info", hasImage: true, hasAudio: true }
+        { position: { x: -5.5, y: -2, z: 6 }, text: "Panel 1 Info", hasImage: true, hasAudio: true, type: 'audio' },
+        { position: { x: 3, y: -2, z: 7 }, text: "Panel 2 Info", hasImage: true, hasAudio: false, type: 'official' },
+        { position: { x: 18, y: -1, z: 11 }, text: "Panel 3 Info", hasImage: false, hasAudio: true, type: 'comparison' },
+        { position: { x: 16, y: 0, z: -1 }, text: "Panel 4 Info", hasImage: false, hasAudio: false, type: 'comparison' },
+        { position: { x: -11, y: 0, z: 12 }, text: "Panel 5 Info", hasImage: true, hasAudio: true, type: 'comparison' }
     ],
     modelStart: { x: 0, y: 8, z: -40 },
     modelEnd: { x: 11, y: 8, z: 9 },
@@ -40,6 +40,7 @@ let panelGraphics = [];
 let panelTextures = []; // NEW: Array to hold the AFrameP5 dynamic textures
 let panelBoxes = [];
 let panelPlanes = [];
+let currentRoomIndex = 1; // Track the current room context
 let placeholderImage;
 const AUDIO_PLACEHOLDER_SRC = 'assets/audios/bell.wav';
 
@@ -62,8 +63,13 @@ function setup() {
         panelTextures.push(texture);
 
         // Initialize Audio Object
-        CONFIG.interactivePanels[i].audioElement = new Audio(AUDIO_PLACEHOLDER_SRC);
-        CONFIG.interactivePanels[i].audioElement.loop = true;
+        const audioPath = AUDIO_PLACEHOLDER_SRC;
+        const sound = loadSound(audioPath);
+        const fft = new p5.FFT();
+        fft.setInput(sound);
+
+        CONFIG.interactivePanels[i].sound = sound;
+        CONFIG.interactivePanels[i].fft = fft;
 
         drawPanelBuffer(i);
     }
@@ -79,6 +85,7 @@ function setup() {
     injectDebugHelpers();
     createRoomMarkers();
     createInteractivePanels();
+    updatePanelOrientations(); // Initial orientation based on default room
     setupDebugPanel();
 
     setStateLoading();
@@ -107,19 +114,68 @@ function drawPanelBuffer(index) {
     const buffer = panelGraphics[index];
     const config = CONFIG.interactivePanels[index];
 
-    buffer.background(0);
-    buffer.textAlign(CENTER, CENTER);
+    buffer.textAlign(LEFT, TOP);
     buffer.textSize(32);
 
-    buffer.fill(255);
-    buffer.text(config.text, buffer.width / 2, 50);
+    switch (config.type) {
+        case 'audio':
+            buffer.background('#FF6250');
+            buffer.fill(255);
+            buffer.text(config.text, 20, 20);
 
-    if (config.hasImage && placeholderImage) {
-        buffer.image(placeholderImage, buffer.width / 2 - 100, 100, 200, 200);
+            // Draw actual dynamic audio waveform using p5.sound FFT
+            buffer.stroke('#5AC4F5');
+            buffer.strokeWeight(4);
+            buffer.noFill();
+
+            if (config.fft) {
+                const waveform = config.fft.waveform();
+                buffer.beginShape();
+                for (let i = 0; i < waveform.length; i++) {
+                    const x = map(i, 0, waveform.length, 0, buffer.width);
+                    const y = map(waveform[i], -1, 1, 0, buffer.height);
+                    buffer.vertex(x, y);
+                }
+                buffer.endShape();
+            }
+
+            buffer.fill(255);
+            buffer.noStroke();
+            buffer.text("Placeholder for audio details.", 20, buffer.height - 80);
+            break;
+
+        case 'official':
+            buffer.background('#F6CE46');
+            buffer.fill(0);
+            buffer.text(config.text, 20, 20);
+            buffer.textSize(24);
+            buffer.text("This is the official record text.", 20, 80);
+            buffer.text("It contains important details.", 20, 120);
+            buffer.text("More lines of information here.", 20, 160);
+            break;
+
+        case 'comparison':
+            buffer.background('#7FB5FA');
+            buffer.fill(0);
+            buffer.text("Comparison View", 20, 20);
+
+            const colWidth = buffer.width / 2 - 20;
+            const imgSize = 200;
+
+            // Column 1
+            if (placeholderImage) {
+                buffer.image(placeholderImage, 20, 80, imgSize, imgSize);
+            }
+            buffer.textSize(20);
+            buffer.text("Left side comparison text, constrained to column.", 20, 300, colWidth);
+
+            // Column 2
+            if (placeholderImage) {
+                buffer.image(placeholderImage, buffer.width / 2 + 10, 80, imgSize, imgSize);
+            }
+            buffer.text("Right side comparison text, also constrained.", buffer.width / 2 + 10, 300, colWidth);
+            break;
     }
-
-    buffer.fill(255);
-    buffer.text("More details about this artifact.", buffer.width / 2, 350);
 
     // Force update if the plane's material has already been constructed
     if (panelPlanes[index] && panelPlanes[index].tag.getObject3D('mesh')) {
@@ -232,7 +288,7 @@ function createAxisLine(start, end, color) {
 }
 
 function createRoomMarkers() {
-    roomMarkers = CONFIG.rooms.map((room) => {
+    roomMarkers = CONFIG.rooms.map((room, index) => {
         const marker = new AFrameP5.Box({
             x: room.position.x,
             y: room.position.y,
@@ -245,6 +301,8 @@ function createRoomMarkers() {
             blue: 0,
             clickFunction: () => {
                 world.slideToObject(marker, 700);
+                currentRoomIndex = index;
+                updatePanelOrientations();
             },
             enterFunction: function () {
                 marker.setScale(1.2, 1.2, 1.2);
@@ -284,6 +342,11 @@ function createInteractivePanels() {
         world.add(plane);
         panelPlanes.push(plane);
 
+        // Ensure the plane has an object3D before calling lookAt
+        plane.tag.addEventListener('loaded', () => {
+            updatePanelOrientations();
+        });
+
         let isPanelVisible = false;
 
         const box = new AFrameP5.Box({
@@ -296,6 +359,7 @@ function createInteractivePanels() {
             red: 0,
             green: 0,
             blue: 255,
+            rotateY: 180,
             enterFunction: () => box.setScale(1.2, 1.2, 1.2),
             leaveFunction: () => box.setScale(1, 1, 1),
             clickFunction: () => {
@@ -304,14 +368,14 @@ function createInteractivePanels() {
 
                 if (isPanelVisible) {
                     console.log(`Panel ${index + 1} opened.`);
-                    if (panelConfig.hasAudio && panelConfig.audioElement) {
-                        panelConfig.audioElement.currentTime = 0;
-                        panelConfig.audioElement.play().catch(e => console.warn("Audio play blocked:", e));
+                    if (panelConfig.hasAudio && panelConfig.sound) {
+                        panelConfig.sound.stop(); // Reset to start
+                        panelConfig.sound.loop();
                     }
                 } else {
                     console.log(`Panel ${index + 1} closed.`);
-                    if (panelConfig.audioElement) {
-                        panelConfig.audioElement.pause();
+                    if (panelConfig.sound) {
+                        panelConfig.sound.pause();
                     }
                 }
             }
@@ -327,7 +391,22 @@ function updatePanelPosition(index) {
     const plane = panelPlanes[index];
 
     if (box) box.setPosition(config.position.x, config.position.y, config.position.z);
-    if (plane) plane.setPosition(config.position.x, config.position.y, config.position.z + 0.6);
+    if (plane) {
+        plane.setPosition(config.position.x, config.position.y + 2, config.position.z);
+        updatePanelOrientations();
+    }
+}
+
+function updatePanelOrientations() {
+    const targetPos = CONFIG.rooms[currentRoomIndex].position;
+    panelPlanes.forEach((plane) => {
+        if (plane && plane.tag) {
+            // Use A-Frame's look-at component or manual rotation logic
+            // Since we want the panel to FACE the room, we point it towards the room position
+            plane.tag.object3D.lookAt(targetPos.x, targetPos.y + 1.6, targetPos.z);
+            // A-Frame planes are usually rotated by default, we might need to adjust based on p5 world coords
+        }
+    });
 }
 
 function setupDebugPanel() {
@@ -383,13 +462,15 @@ function setupDebugPanel() {
         f.addBinding(panelConfig.position, "y", { step: 0.1 }).on('change', () => updatePanelPosition(index));
         f.addBinding(panelConfig.position, "z", { step: 0.1 }).on('change', () => updatePanelPosition(index));
 
+        f.addBinding(panelConfig, 'type', { options: { Audio: 'audio', Official: 'official', Comparison: 'comparison' } }).on('change', () => drawPanelBuffer(index));
+
         f.addBinding(panelConfig, "hasImage").on('change', () => {
             drawPanelBuffer(index);
         });
 
         f.addBinding(panelConfig, "hasAudio").on('change', () => {
-            if (!panelConfig.hasAudio && panelConfig.audioElement) {
-                panelConfig.audioElement.pause();
+            if (!panelConfig.hasAudio && panelConfig.sound) {
+                panelConfig.sound.pause();
             }
         });
     });
@@ -448,5 +529,11 @@ function toVec3String(vec) {
 }
 
 function draw() {
-
+    // Dynamically update the panel buffers to show the waveform animation
+    for (let i = 0; i < CONFIG.interactivePanels.length; i++) {
+        // Redraw the buffer every frame if it's visible and is of type 'audio'
+        if (panelPlanes[i] && panelPlanes[i].tag.getAttribute('visible')) {
+            drawPanelBuffer(i);
+        }
+    }
 }
