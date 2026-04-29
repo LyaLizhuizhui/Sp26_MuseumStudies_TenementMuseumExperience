@@ -7,7 +7,10 @@
     <title>Tenement Museum 7A</title>
     <script src="js/lib/p5.min.js"></script>
     <script src="js/lib/aframe.min.js"></script>
-    <script src="js/p5.sound.min.js"></script>
+    <script src="js/lib/p5.sound.min.js"></script>
+    <!--script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/addons/p5.sound.min.js"></script>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script-->
     <script src="https://craignyu.github.io/aframep5/libraries/aframep5-v2.3.js"></script>
     <script src="js/sketch.js"></script>
     <link rel="stylesheet" href="css/style.css">
@@ -23,21 +26,16 @@
         <h2 id="text-loading">LOADING...</h2>
         <button id="btn-start" aria-label="Start experience"> ▶</button>
     </div>
-    <!-- container to hold our VR scene - make sure to give this element an ID of 'VRScene' -->
-    <a-scene id="VRScene">
 
-        <a-assets id="VRAssets">
+    <a-scene id="VRScene" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;">
+        <a-assets>
+            <a-asset-item id="apartment" src="7Acompressed.glb"></a-asset-item>
             <img id="placeholderImage" src="assets/images/placeholderImage.png">
-            <a-asset-item id="apartment" src="7A/scene.gltf"></a-asset-item>
         </a-assets>
 
         <a-entity id="main-camera" camera look-controls position="0 1.6 0"></a-entity>
 
     </a-scene>
-
-    <!--div id="minimap-container">
-        <img src="images/floorPlan.jpg" alt="Floor Plan" id="minimap-image">
-    </div-->
 </body>
 
 </html>
