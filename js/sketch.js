@@ -127,6 +127,13 @@ let panelPlanes = [];
 let panelHighlightCircles = [];
 let currentRoomIndex = 1;
 
+function getPanelBufferSize(panelConfig) {
+    if (panelConfig && panelConfig.type === 'official') {
+        return { w: 341, h: 512 };
+    }
+    return { w: 512, h: 341 };
+}
+
 function preload() {
     CONFIG.interactivePanels.forEach((panel) => {
         panel.loadedImages = [];
@@ -146,7 +153,8 @@ function setup() {
     ui = getUiElements();
 
     for (let i = 0; i < CONFIG.interactivePanels.length; i++) {
-        const buffer = createGraphics(512, 341);
+        const size = getPanelBufferSize(CONFIG.interactivePanels[i]);
+        const buffer = createGraphics(size.w, size.h);
         panelGraphics.push(buffer);
 
         const texture = world.createDynamicTextureFromCreateGraphics(buffer);
@@ -258,16 +266,16 @@ function drawPanelBuffer(index) {
             const officialTitle = config.titleText || "";
             const officialMaxW = buffer.width - 40;
 
-            buffer.textSize(26);
+            buffer.textSize(22);
             // Draw title with word wrap
             buffer.text(officialTitle, 20, 18, officialMaxW);
 
             // Calculate dynamic Y position to avoid overlap
             const officialTitleW = buffer.textWidth(officialTitle);
             const officialLines = Math.ceil(officialTitleW / officialMaxW) || 1;
-            const officialDescY = 18 + (officialLines * 30) + 15; // 30 is approx line height, 15 is gap
+            const officialDescY = 18 + (officialLines * 26) + 13; // 26 is approx line height, 13 is gap
 
-            buffer.textSize(18);
+            buffer.textSize(14);
             buffer.text(config.detailText || "", 20, officialDescY, officialMaxW, buffer.height - officialDescY - 10);
             break;
 
@@ -669,8 +677,12 @@ function createInteractivePanels() {
     CONFIG.interactivePanels.forEach((panelConfig, index) => {
 
         // --- FEATURE 2: Adjust panel size based on type ---
-        const panelWidth = panelConfig.type === 'official' ? 6 : 4;
-        const panelHeight = panelConfig.type === 'official' ? 4 : 2.67;
+        const panelWidth = panelConfig.type === 'official' ? 4 : 4;
+        const panelHeight = panelConfig.type === 'official' ? 6 : 2.67;
+
+        const buffer = panelGraphics[index];
+        const textureW = buffer ? buffer.width : 512;
+        const textureH = buffer ? buffer.height : 341;
 
         const plane = new AFrameP5.Plane({
             x: panelConfig.position.x,
@@ -680,8 +692,8 @@ function createInteractivePanels() {
             height: panelHeight, // Updated dynamically
             asset: panelTextures[index],
             dynamicTexture: true,
-            dynamicTextureWidth: 512,
-            dynamicTextureHeight: 341,
+            dynamicTextureWidth: textureW,
+            dynamicTextureHeight: textureH,
             clickFunction: function (entity, intersectionInfo) {
                 if (panelConfig.type !== 'comparison') {
                     return;
@@ -703,7 +715,7 @@ function createInteractivePanels() {
             }
         });
 
-        plane.tag.setAttribute('visible', false);
+        plane.tag.setAttribute('visible', panelConfig.type === 'official');
 
         const currentMaterial = plane.tag.getAttribute('material') || {};
         currentMaterial.side = 'double';
@@ -829,13 +841,13 @@ function updatePanelOrientations() {
     const targetPos = CONFIG.rooms[currentRoomIndex].position;
     panelPlanes.forEach((plane) => {
         if (plane && plane.tag) {
-            plane.tag.object3D.lookAt(targetPos.x, targetPos.y + 1.6, targetPos.z);
+            plane.tag.object3D.lookAt(targetPos.x, targetPos.y + 0.6, targetPos.z);
         }
     });
 
     panelHighlightCircles.forEach((circle) => {
         if (circle && circle.tag) {
-            circle.tag.object3D.lookAt(targetPos.x, targetPos.y + 1.6, targetPos.z);
+            circle.tag.object3D.lookAt(targetPos.x, targetPos.y + 0.6, targetPos.z);
         }
     });
 }
