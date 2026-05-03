@@ -7,7 +7,7 @@ const CONFIG = {
     interactivePanels: [
         {
             position: { x: 0, y: -1, z: 1 },
-            titleText: "The Baldizzis's Life in the Tenement",
+            titleText: "The Baldizzis' Life in the Tenement",
             detailText: 'The Lower East Side is historically known as an immigrant neighborhood. For generations, it served as a receiving place for people arriving from other countries, as well as from other parts of the United States. Many of these newcomers found their first New York homes in tenements. \n\nThe Baldizzis, a Catholic family from Sicily, lived at 97 Orchard Street in the 1930s. Their story took place during both a low point in American immigration and the height of the Great Depression. \n\nThis virtual tour explores how the family’s story connects with the larger historical events of this era. We will see how the Baldizzis experienced a defining period in the nation’s past.',
             type: 'official'
         },
@@ -35,16 +35,16 @@ const CONFIG = {
         },
         {
             position: { x: 20, y: 0, z: 5.5 },
-            titleText: "Orchard and Hester St, 1930s vs Today",
-            summaryText: "",
+            titleText: "Orchard and Hester St",
+            summaryText: "1930s and Today",
             type: 'comparison',
             imageSources: ['assets/images/Orchard1.png', 'assets/images/Orchard2.png'],
             currentImageIndex: 0
         },
         {
             position: { x: -15.5, y: -0.3, z: 6.4 },
-            titleText: "Josephine with family and neighbors",
-            summaryText: "1935, 1992",
+            titleText: "Josephine",
+            summaryText: "with family and neighbors, 1935 and 1992",
             type: 'comparison',
             imageSources: ['assets/images/josephine1.png', 'assets/images/josephine2.png'],
             currentImageIndex: 0
@@ -113,6 +113,7 @@ let roomMarkers = [];
 let navigationWaypoints = [];
 let ui;
 const animationState = { modelDone: false };
+let fingerIcon;
 
 const debugState = {
     cameraPos: "0.00, 0.00, 0.00"
@@ -136,6 +137,7 @@ function preload() {
             panel.loadedSound = loadSound(panel.audioSrc);
         }
     });
+    fingerIcon = loadImage('assets/images/finger.png');
 }
 
 function setup() {
@@ -208,8 +210,11 @@ function drawPanelBuffer(index) {
         case 'audio':
             buffer.background('#FF6250');
             buffer.fill(255);
+
+            const audioMaxW = buffer.width - 40;
+            const audioTitle = config.titleText || "";
             buffer.textSize(26);
-            buffer.text(config.titleText || "", 20, 18);
+            buffer.text(audioTitle, 20, 18, audioMaxW);
 
             buffer.stroke('#5AC4F5');
             buffer.strokeWeight(4);
@@ -218,7 +223,11 @@ function drawPanelBuffer(index) {
             if (config.fft) {
                 const waveform = config.fft.waveform();
                 const waveX = 20;
-                const waveY = 70;
+                // Move waveform down slightly if title is multi-line
+                const audioTitleW = buffer.textWidth(audioTitle);
+                const audioLines = Math.ceil(audioTitleW / audioMaxW) || 1;
+                const waveY = 18 + (audioLines * 30) + 15;
+
                 const waveW = buffer.width - 40;
                 const waveH = 130;
                 buffer.beginShape();
@@ -228,22 +237,38 @@ function drawPanelBuffer(index) {
                     buffer.vertex(x, y);
                 }
                 buffer.endShape();
-            }
 
-            buffer.fill(255);
-            buffer.noStroke();
-            buffer.textSize(20);
-            buffer.text(config.detailText || "", 20, 215, buffer.width - 40, buffer.height - 235);
+                buffer.fill(255);
+                buffer.noStroke();
+                buffer.textSize(20);
+                const detailY = waveY + waveH + 15;
+                buffer.text(config.detailText || "", 20, detailY, audioMaxW, buffer.height - detailY - 20);
+            } else {
+                buffer.fill(255);
+                buffer.noStroke();
+                buffer.textSize(20);
+                buffer.text(config.detailText || "", 20, 100, audioMaxW, buffer.height - 120);
+            }
             break;
 
         case 'official':
             buffer.background('#F6CE46');
             buffer.fill(0);
-            buffer.textSize(26);
-            buffer.text(config.titleText || "", 20, 18);
 
-            buffer.textSize(20);
-            buffer.text(config.detailText || "", 20, 70, buffer.width - 40, buffer.height - 90);
+            const officialTitle = config.titleText || "";
+            const officialMaxW = buffer.width - 40;
+
+            buffer.textSize(26);
+            // Draw title with word wrap
+            buffer.text(officialTitle, 20, 18, officialMaxW);
+
+            // Calculate dynamic Y position to avoid overlap
+            const officialTitleW = buffer.textWidth(officialTitle);
+            const officialLines = Math.ceil(officialTitleW / officialMaxW) || 1;
+            const officialDescY = 18 + (officialLines * 30) + 15; // 30 is approx line height, 15 is gap
+
+            buffer.textSize(18);
+            buffer.text(config.detailText || "", 20, officialDescY, officialMaxW, buffer.height - officialDescY - 10);
             break;
 
         case 'comparison':
@@ -279,18 +304,38 @@ function drawPanelBuffer(index) {
                 buffer.text("No images", layout.imageRect.x + 10, layout.imageRect.y + 10);
             }
 
-            buffer.textAlign(CENTER, TOP);
-            buffer.fill(0, 0, 0, 180);
             buffer.textSize(16);
-            buffer.text("press panel to see more", layout.imageRect.x + (layout.imageRect.w / 2), layout.imageRect.y + layout.imageRect.h + 2);
+            const promptText = "press panel to see more";
+            const textWidth = buffer.textWidth(promptText);
+            const iconSize = 16;
+            const gap = 8;
+
+            // Calculate total width to center everything
+            const totalWidth = iconSize + gap + textWidth;
+            const startX = layout.imageRect.x + (layout.imageRect.w / 2) - (totalWidth / 2);
+            const drawY = layout.imageRect.y + layout.imageRect.h + 5;
+
+            if (typeof fingerIcon !== 'undefined' && fingerIcon) {
+                buffer.image(fingerIcon, startX, drawY, iconSize, iconSize);
+            }
+
+            buffer.textAlign(LEFT, TOP);
+            buffer.fill(0, 0, 0, 180);
+            buffer.text(promptText, startX + iconSize + gap, drawY);
 
             buffer.textAlign(LEFT, TOP);
             buffer.fill(0);
-            buffer.textSize(24);
-            buffer.text(config.titleText || "", layout.textRect.x, layout.textRect.y, layout.textRect.w);
 
-            buffer.textSize(20);
-            buffer.text(config.summaryText || "", layout.textRect.x, layout.textRect.y + 32, layout.textRect.w, layout.textRect.h - 32);
+            const compTitle = config.titleText || "";
+            buffer.textSize(24);
+            buffer.text(compTitle, layout.textRect.x, layout.textRect.y, layout.textRect.w);
+
+            const compTitleWidth = buffer.textWidth(compTitle);
+            const compTitleLines = Math.ceil(compTitleWidth / layout.textRect.w) || 1;
+            const compDynamicY = layout.textRect.y + (compTitleLines * 28) + 12; // 28 is approx line height
+
+            buffer.textSize(16);
+            buffer.text(config.summaryText || "", layout.textRect.x, compDynamicY, layout.textRect.w, layout.textRect.h - (compDynamicY - layout.textRect.y));
             break;
     }
 
@@ -439,6 +484,7 @@ function createRoomMarkers() {
                 marker.setScale(1, 1, 1);
             },
         });
+        marker.tag.setAttribute('visible', false);
         world.add(marker);
         return marker;
     });
