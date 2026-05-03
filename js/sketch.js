@@ -21,7 +21,7 @@ const CONFIG = {
         {
             position: { x: 16.2, y: 0, z: -0.5 },
             titleText: "Josephine's Memories: Bedroom",
-            detailText: "This is the official record text.\n\nIt contains important details.\n\nMore lines of information here.",
+            detailText: '"In the back room, my brother and I slept on a folding bed. Every night, my mother would open it up, or my father, and my brother would sleep at one end and I slept at the other end. Every morning, we would have to fold it up, cover it very nicely, and put it back against the wall. \n\nThe other thing in that bedroom was a trunk that my brother and I enjoyed playing with. When I say playing, I mean standing on top of it. That was our stage. I became Claudette Colbert, and he became somebody else. Whatever movie was out, we were acting. We would do a song and dance or something, whatever was amusing to us. \n\nSometimes in the trunk, there must have been my mother’s clothing, hats, and whatever. We would take them out, wear them, put them on, high heels, you know, and have a lot of fun. \n\nRita Bonfiglio, who lived upstairs in the tenement, used to come down and play with us too. There would be three of us, and we would fight. I wanted to be Claudette Colbert. She wanted to be Claudette Colbert. We had a ball. We just enjoyed doing that. \n\nIn the back room, there was a shaft, a window facing a shaft. Across the way was another window, and back there, the Rosenthals lived. I can still see Mrs. Rosenthal in the air shaft window, waving to me, motioning for me to come in and turn on the lights because it was the Sabbath, the Jewish holiday, and they were not allowed to touch the electricity. \n\nIt made me very proud to have to do that. I used to feel good that she chose me to do that job for her. I can still see her today. The vision of her in that window has never left my memory.',
             type: 'audio',
             audioSrc: 'assets/audios/bedroom.mp3'
         },
@@ -43,7 +43,7 @@ const CONFIG = {
         },
         {
             position: { x: -15.5, y: -0.3, z: 6.4 },
-            titleText: "Josephine",
+            titleText: "Josephine Baldizzi",
             summaryText: "with family and neighbors, 1935 and 1992",
             type: 'comparison',
             imageSources: ['assets/images/josephine1.png', 'assets/images/josephine2.png'],
@@ -59,8 +59,8 @@ const CONFIG = {
         },
         {
             position: { x: -11.5, y: 0.2, z: 13 },
-            titleText: "Comparison View",
-            summaryText: "Rosaria (second from the right) at a garment factory, 1940",
+            titleText: "Rosaria Baldizzi",
+            summaryText: "(second from the right) at a garment factory, 1940",
             type: 'comparison',
             imageSources: ['assets/images/factory1.png'],
             currentImageIndex: 0
@@ -113,6 +113,7 @@ let roomMarkers = [];
 let navigationWaypoints = [];
 let ui;
 const animationState = { modelDone: false };
+let hudReady = false;
 let fingerIcon;
 
 const debugState = {
@@ -127,9 +128,107 @@ let panelPlanes = [];
 let panelHighlightCircles = [];
 let currentRoomIndex = 1;
 
+const AUDIO_TRANSCRIPT = {
+    textSize: 16,
+    lineHeight: 22,
+    hintText: "press panel to pause / resume",
+    hintGap: 10,
+    hintIconSize: 16,
+    hintTextGap: 8,
+    contentPaddingBottom: 8
+};
+
+function wrapTextToLines(buffer, text, maxWidth) {
+    const paragraphs = String(text || "").split(/\n\n+/);
+    const lines = [];
+
+    paragraphs.forEach((paragraph, index) => {
+        const words = paragraph.replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+        let current = "";
+
+        words.forEach((word) => {
+            const testLine = current ? `${current} ${word}` : word;
+            if (buffer.textWidth(testLine) <= maxWidth) {
+                current = testLine;
+                return;
+            }
+
+            if (current) {
+                lines.push(current);
+            }
+            current = word;
+        });
+
+        if (current) {
+            lines.push(current);
+        }
+
+        if (index < paragraphs.length - 1) {
+            lines.push("");
+        }
+    });
+
+    return lines;
+}
+
+function getAudioScrollOffset(panelConfig, scrollRange) {
+    if (!panelConfig || !panelConfig.loadedSound) {
+        return 0;
+    }
+
+    const duration = panelConfig.loadedSound.duration();
+    if (!duration || duration <= 0 || scrollRange <= 0) {
+        return 0;
+    }
+
+    const current = panelConfig.loadedSound.currentTime();
+    const progress = constrain(current / duration, 0, 1);
+    return progress * scrollRange;
+}
+
+function toggleAudioPlayback(panelConfig) {
+    if (!panelConfig || !panelConfig.loadedSound) {
+        return;
+    }
+
+    if (panelConfig.loadedSound.isPlaying()) {
+        panelConfig.loadedSound.pause();
+        return;
+    }
+
+    panelConfig.loadedSound.play();
+}
+
+function togglePanelOpen(panelConfig, plane, index) {
+    const wasVisible = plane.tag.getAttribute('visible');
+
+    // Step A: Close ALL panels and pause ALL audio
+    panelPlanes.forEach((p, i) => {
+        p.tag.setAttribute('visible', false);
+        const conf = CONFIG.interactivePanels[i];
+        if (conf.type === 'audio' && conf.loadedSound) {
+            conf.loadedSound.pause();
+        }
+    });
+
+    // Step B: If the panel we clicked wasn't already open, open it now
+    if (!wasVisible) {
+        plane.tag.setAttribute('visible', true);
+        console.log(`Panel ${index + 1} opened.`);
+
+        if (panelConfig.type === 'audio' && panelConfig.loadedSound) {
+            panelConfig.loadedSound.stop();
+            panelConfig.loadedSound.loop();
+        }
+        return;
+    }
+
+    console.log(`Panel ${index + 1} closed.`);
+}
+
 function getPanelBufferSize(panelConfig) {
     if (panelConfig && panelConfig.type === 'official') {
-        return { w: 341, h: 512 };
+        return { w: 341, h: 426 };
     }
     return { w: 512, h: 341 };
 }
@@ -182,6 +281,7 @@ function setup() {
     createRoomMarkers();
     createNavigationWaypoints();
     createInteractivePanels();
+    setHudVisibility(false);
     updatePanelOrientations();
     updateWaypointArrowDirections();
     setupDebugPanel();
@@ -203,6 +303,8 @@ function setup() {
     apartment.tag.addEventListener("animationcomplete__position", () => {
         animationState.modelDone = true;
         if (animationState.modelDone) {
+            hudReady = true;
+            setHudVisibility(true);
             setStateInteractive();
         }
     });
@@ -246,11 +348,44 @@ function drawPanelBuffer(index) {
                 }
                 buffer.endShape();
 
-                buffer.fill(255);
+
+                const hintY = waveY + waveH + AUDIO_TRANSCRIPT.hintGap;
+                buffer.fill(225);
                 buffer.noStroke();
-                buffer.textSize(20);
-                const detailY = waveY + waveH + 15;
-                buffer.text(config.detailText || "", 20, detailY, audioMaxW, buffer.height - detailY - 20);
+                buffer.textSize(AUDIO_TRANSCRIPT.textSize);
+
+                const hintTextWidth = buffer.textWidth(AUDIO_TRANSCRIPT.hintText);
+                const hintTotalWidth = AUDIO_TRANSCRIPT.hintIconSize + AUDIO_TRANSCRIPT.hintTextGap + hintTextWidth;
+                const hintStartX = 20 + (audioMaxW / 2) - (hintTotalWidth / 2);
+
+                if (typeof fingerIcon !== 'undefined' && fingerIcon) {
+                    buffer.image(fingerIcon, hintStartX, hintY, AUDIO_TRANSCRIPT.hintIconSize, AUDIO_TRANSCRIPT.hintIconSize);
+                }
+
+                buffer.textAlign(LEFT, TOP);
+                buffer.text(AUDIO_TRANSCRIPT.hintText, hintStartX + AUDIO_TRANSCRIPT.hintIconSize + AUDIO_TRANSCRIPT.hintTextGap, hintY + 1);
+
+                const detailY = hintY + AUDIO_TRANSCRIPT.hintIconSize + AUDIO_TRANSCRIPT.hintGap;
+                const detailHeight = buffer.height - detailY - AUDIO_TRANSCRIPT.contentPaddingBottom;
+
+                buffer.fill(255);
+                const lines = wrapTextToLines(buffer, config.detailText || "", audioMaxW);
+                const totalHeight = lines.length * AUDIO_TRANSCRIPT.lineHeight;
+                const scrollRange = Math.max(0, totalHeight - detailHeight);
+                const scrollOffset = getAudioScrollOffset(config, scrollRange);
+
+                buffer.push();
+                buffer.textSize(AUDIO_TRANSCRIPT.textSize);
+
+                const startLine = Math.max(0, Math.floor(scrollOffset / AUDIO_TRANSCRIPT.lineHeight));
+                const maxLines = Math.ceil(detailHeight / AUDIO_TRANSCRIPT.lineHeight) + 1;
+                const visibleLines = lines.slice(startLine, startLine + maxLines);
+                const yOffset = detailY - (scrollOffset - (startLine * AUDIO_TRANSCRIPT.lineHeight)) + 15;
+
+                visibleLines.forEach((line, idx) => {
+                    buffer.text(line, 20, yOffset + (idx * AUDIO_TRANSCRIPT.lineHeight), audioMaxW);
+                });
+                buffer.pop();
             } else {
                 buffer.fill(255);
                 buffer.noStroke();
@@ -313,7 +448,9 @@ function drawPanelBuffer(index) {
             }
 
             buffer.textSize(16);
-            const promptText = "press panel to see more";
+            buffer.fill(225);
+            const promptText = "press panel to see more!";
+            buffer.fill(255);
             const textWidth = buffer.textWidth(promptText);
             const iconSize = 16;
             const gap = 8;
@@ -448,6 +585,40 @@ function setStateInteractive() {
     }
 }
 
+function setHudVisibility(isVisible) {
+
+    panelPlanes.forEach((plane) => {
+        if (plane && plane.tag) {
+            const defaultVisible = plane.tag.dataset.defaultVisible === "true";
+            plane.tag.setAttribute("visible", isVisible && defaultVisible);
+        }
+    });
+
+    panelHighlightCircles.forEach((circle) => {
+        if (circle && circle.tag) {
+            circle.tag.setAttribute("visible", isVisible);
+        }
+    });
+
+    panelMagnifiers.forEach((magnifierModel) => {
+        if (magnifierModel && magnifierModel.tag) {
+            magnifierModel.tag.setAttribute("visible", isVisible);
+        }
+    });
+
+    panelBoxes.forEach((box) => {
+        if (box && box.tag) {
+            box.tag.setAttribute("visible", isVisible);
+        }
+    });
+
+    navigationWaypoints.forEach((waypoint) => {
+        if (waypoint && waypoint.anchor && waypoint.anchor.tag) {
+            waypoint.anchor.tag.setAttribute("visible", isVisible);
+        }
+    });
+}
+
 function injectDebugHelpers() {
     const grid = new AFrameP5.Plane({
         width: CONFIG.gridSize.width,
@@ -533,7 +704,12 @@ function createNavigationWaypoints() {
             blue: 255,
             enterFunction: () => setWaypointHoverState(anchor, true),
             leaveFunction: () => setWaypointHoverState(anchor, false),
-            clickFunction: () => handleWaypointClick(waypoint)
+            clickFunction: () => {
+                if (!hudReady) {
+                    return;
+                }
+                handleWaypointClick(waypoint);
+            }
         });
 
         world.add(anchor);
@@ -543,6 +719,8 @@ function createNavigationWaypoints() {
             transparent: true,
             opacity: 0
         });
+
+        anchor.tag.setAttribute("visible", false);
 
         const ring = document.createElement("a-entity");
         ring.setAttribute("geometry", `primitive: ring; radiusInner: ${style.ringInnerRadius}; radiusOuter: ${style.ringOuterRadius}`);
@@ -602,6 +780,9 @@ function createNavigationWaypoints() {
 }
 
 function setWaypointHoverState(anchor, isHovering) {
+    if (!hudReady) {
+        return;
+    }
     const style = CONFIG.navigationWaypointStyle;
     const waypointData = anchor.tag.__waypointData;
     if (!waypointData) {
@@ -678,7 +859,7 @@ function createInteractivePanels() {
 
         // --- FEATURE 2: Adjust panel size based on type ---
         const panelWidth = panelConfig.type === 'official' ? 4 : 4;
-        const panelHeight = panelConfig.type === 'official' ? 6 : 2.67;
+        const panelHeight = panelConfig.type === 'official' ? 5 : 2.67;
 
         const buffer = panelGraphics[index];
         const textureW = buffer ? buffer.width : 512;
@@ -686,15 +867,25 @@ function createInteractivePanels() {
 
         const plane = new AFrameP5.Plane({
             x: panelConfig.position.x,
-            y: panelConfig.position.y + 2,
+            y: panelConfig.type === 'official' ? panelConfig.position.y + 3 : panelConfig.position.y + 2,
             z: panelConfig.position.z,
-            width: panelWidth,   // Updated dynamically
-            height: panelHeight, // Updated dynamically
+            width: panelWidth,
+            height: panelHeight,
             asset: panelTextures[index],
             dynamicTexture: true,
             dynamicTextureWidth: textureW,
             dynamicTextureHeight: textureH,
             clickFunction: function (entity, intersectionInfo) {
+                if (!hudReady) {
+                    return;
+                }
+                if (panelConfig.type === 'audio') {
+                    if (!plane.tag.getAttribute('visible')) {
+                        return;
+                    }
+                    toggleAudioPlayback(panelConfig);
+                    return;
+                }
                 if (panelConfig.type !== 'comparison') {
                     return;
                 }
@@ -715,7 +906,8 @@ function createInteractivePanels() {
             }
         });
 
-        plane.tag.setAttribute('visible', panelConfig.type === 'official');
+        plane.tag.dataset.defaultVisible = panelConfig.type === 'official';
+        plane.tag.setAttribute('visible', false);
 
         const currentMaterial = plane.tag.getAttribute('material') || {};
         currentMaterial.side = 'double';
@@ -728,6 +920,13 @@ function createInteractivePanels() {
             updatePanelOrientations();
         });
 
+        const typeColors = {
+            'audio': '#FF6250',
+            'official': '#F6CE46',
+            'comparison': '#7FB5FA'
+        };
+        const circleColor = typeColors[panelConfig.type] || "#FFD700"; // Default to gold if type not found
+
         const highlightCircle = new AFrameP5.Circle({
             x: panelConfig.position.x,
             y: panelConfig.position.y,
@@ -736,12 +935,14 @@ function createInteractivePanels() {
         });
 
         highlightCircle.tag.setAttribute("material", {
-            color: "#FFD700",
+            color: circleColor,
             transparent: true,
             opacity: 0.4,
             side: "double",
             depthWrite: false
         });
+
+        highlightCircle.tag.setAttribute("visible", false);
 
         world.add(highlightCircle);
         panelHighlightCircles.push(highlightCircle);
@@ -751,11 +952,19 @@ function createInteractivePanels() {
             x: panelConfig.position.x,
             y: panelConfig.position.y + 0.3,
             z: panelConfig.position.z,
+            clickFunction: () => {
+                if (!hudReady) {
+                    return;
+                }
+                togglePanelOpen(panelConfig, plane, index);
+            }
         });
         world.add(magnifierModel);
         magnifierModel.setScale(0.15, 0.15, 0.15);
         magnifierModel.setRotation(0, -45, -90);
         panelMagnifiers.push(magnifierModel);
+
+        magnifierModel.tag.setAttribute("visible", false);
 
         const box = new AFrameP5.Box({
             x: panelConfig.position.x,
@@ -770,30 +979,10 @@ function createInteractivePanels() {
             enterFunction: () => magnifierModel.setScale(0.2, 0.2, 0.2),
             leaveFunction: () => magnifierModel.setScale(0.15, 0.15, 0.15),
             clickFunction: () => {
-                // --- FEATURE 1: Allow only one panel open at a time ---
-                const wasVisible = plane.tag.getAttribute('visible');
-
-                // Step A: Close ALL panels and pause ALL audio
-                panelPlanes.forEach((p, i) => {
-                    p.tag.setAttribute('visible', false);
-                    const conf = CONFIG.interactivePanels[i];
-                    if (conf.type === 'audio' && conf.loadedSound) {
-                        conf.loadedSound.pause();
-                    }
-                });
-
-                // Step B: If the panel we clicked wasn't already open, open it now
-                if (!wasVisible) {
-                    plane.tag.setAttribute('visible', true);
-                    console.log(`Panel ${index + 1} opened.`);
-
-                    if (panelConfig.type === 'audio' && panelConfig.loadedSound) {
-                        panelConfig.loadedSound.stop();
-                        panelConfig.loadedSound.loop();
-                    }
-                } else {
-                    console.log(`Panel ${index + 1} closed.`);
+                if (!hudReady) {
+                    return;
                 }
+                togglePanelOpen(panelConfig, plane, index);
             }
         });
         world.add(box);
@@ -803,6 +992,8 @@ function createInteractivePanels() {
             transparent: true,
             opacity: 0
         });
+
+        box.tag.setAttribute("visible", false);
 
         panelBoxes.push(box);
     });
