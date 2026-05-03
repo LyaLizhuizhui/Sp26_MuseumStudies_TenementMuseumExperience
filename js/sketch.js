@@ -369,6 +369,7 @@ function getUiElements() {
         layer: document.querySelector("#ui-layer"),
         title: document.querySelector("#title"),
         loading: document.querySelector("#text-loading"),
+        spinner: document.querySelector("#loading-spinner"),
         button: document.querySelector("#btn-start")
     };
 }
@@ -379,8 +380,15 @@ function setStateLoading() {
 
     if (ui.layer) ui.layer.style.display = "flex";
     if (ui.loading) ui.loading.style.display = "block";
-    if (ui.title) ui.title.style.display = "none";
-    if (ui.button) ui.button.style.display = "none";
+    if (ui.spinner) ui.spinner.style.display = "block";
+    if (ui.title) {
+        ui.title.hidden = true;
+        ui.title.style.display = "none";
+    }
+    if (ui.button) {
+        ui.button.hidden = true;
+        ui.button.style.display = "none";
+    }
 
     const cam = document.querySelector("#main-camera");
     if (cam) {
@@ -391,8 +399,15 @@ function setStateLoading() {
 function setStateB1() {
     if (ui.layer) ui.layer.style.display = "flex";
     if (ui.loading) ui.loading.style.display = "none";
-    if (ui.title) ui.title.style.display = "block";
-    if (ui.button) ui.button.style.display = "inline-flex";
+    if (ui.spinner) ui.spinner.style.display = "none";
+    if (ui.title) {
+        ui.title.hidden = false;
+        ui.title.style.display = "block";
+    }
+    if (ui.button) {
+        ui.button.hidden = false;
+        ui.button.style.display = "inline-flex";
+    }
 
     apartment.setPosition(CONFIG.modelStart.x, CONFIG.modelStart.y, CONFIG.modelStart.z);
     apartment.setRotation(0, 0, 0);

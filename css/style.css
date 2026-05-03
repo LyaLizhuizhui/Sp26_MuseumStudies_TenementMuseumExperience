@@ -5,6 +5,10 @@ body {
     background-color: #f0f0f0;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 #ui-layer {
     position: fixed;
     top: 0;
@@ -34,7 +38,12 @@ body {
     letter-spacing: 1px;
 }
 
+#title {
+    display: none;
+}
+
 #btn-start {
+    display: none;
     width: 70px;
     height: 70px;
     border-radius: 50%;
@@ -44,7 +53,7 @@ body {
     font-size: 28px;
     cursor: pointer;
 
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     padding-left: 6px;
