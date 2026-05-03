@@ -102,6 +102,7 @@ const CONFIG = {
 
 let world;
 let apartment;
+let magnifier;
 let roomMarkers = [];
 let navigationWaypoints = [];
 let ui;
@@ -115,6 +116,7 @@ const debugState = {
 let panelGraphics = [];
 let panelTextures = [];
 let panelBoxes = [];
+let panelMagnifiers = [];
 let panelPlanes = [];
 let currentRoomIndex = 1;
 
@@ -649,19 +651,30 @@ function createInteractivePanels() {
 
         let isPanelVisible = false;
 
+        const magnifierModel = new AFrameP5.GLTF({
+            asset: "magnifier",
+            x: panelConfig.position.x,
+            y: panelConfig.position.y,
+            z: panelConfig.position.z,
+            rotateY: 35,
+            rotateX: 180
+        });
+        world.add(magnifierModel);
+        magnifierModel.setScale(0.15, 0.15, 0.15);
+        panelMagnifiers.push(magnifierModel);
+
         const box = new AFrameP5.Box({
             x: panelConfig.position.x,
             y: panelConfig.position.y,
             z: panelConfig.position.z,
-            width: 0.2,
-            height: 0.2,
-            depth: 0.2,
-            red: 0,
-            green: 0,
+            width: 0.6,
+            height: 0.6,
+            depth: 0.6,
+            red: 255,
+            green: 255,
             blue: 255,
-            rotateY: 180,
-            enterFunction: () => box.setScale(1.2, 1.2, 1.2),
-            leaveFunction: () => box.setScale(1, 1, 1),
+            enterFunction: () => magnifierModel.setScale(0.2, 0.2, 0.2),
+            leaveFunction: () => magnifierModel.setScale(0.15, 0.15, 0.15),
             clickFunction: () => {
                 isPanelVisible = !isPanelVisible;
                 plane.tag.setAttribute('visible', isPanelVisible);
@@ -681,6 +694,13 @@ function createInteractivePanels() {
             }
         });
         world.add(box);
+
+        box.tag.setAttribute("material", {
+            color: "#ffffff",
+            transparent: true,
+            opacity: 0
+        });
+
         panelBoxes.push(box);
     });
 }
@@ -689,8 +709,10 @@ function updatePanelPosition(index) {
     const config = CONFIG.interactivePanels[index];
     const box = panelBoxes[index];
     const plane = panelPlanes[index];
+    const magnifierModel = panelMagnifiers[index];
 
     if (box) box.setPosition(config.position.x, config.position.y, config.position.z);
+    if (magnifierModel) magnifierModel.setPosition(config.position.x, config.position.y, config.position.z);
     if (plane) {
         plane.setPosition(config.position.x, config.position.y + 2, config.position.z);
         updatePanelOrientations();
