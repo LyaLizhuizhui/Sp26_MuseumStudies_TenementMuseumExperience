@@ -6,21 +6,27 @@ const CONFIG = {
     ],
     interactivePanels: [
         {
-            position: { x: 3.5, y: 0, z: 11 },
+            position: { x: 0, y: -1, z: 1 },
+            titleText: "The Baldizzis's Life in the Tenement",
+            detailText: 'The Lower East Side is historically known as an immigrant neighborhood. For generations, it served as a receiving place for people arriving from other countries, as well as from other parts of the United States. Many of these newcomers found their first New York homes in tenements. \n\nThe Baldizzis, a Catholic family from Sicily, lived at 97 Orchard Street in the 1930s. Their story took place during both a low point in American immigration and the height of the Great Depression. \n\nThis virtual tour explores how the family’s story connects with the larger historical events of this era. We will see how the Baldizzis experienced a defining period in the nation’s past.',
+            type: 'official'
+        },
+        {
+            position: { x: 3.3, y: 0, z: 11 },
             titleText: "Josephine's Memories: Kitchen",
             detailText: '"I remember sitting around the table in the kitchen under the window and we would – my mother would have made us a fried egg or something on a roll with butter. And my father would put the ketchup on it. That was a treat every Saturday. Had to be Saturday or a Sunday, we would sit around and enjoy that roll with the butter. My mother’d be moving around, always cooking, serving, doing things, busy as a bee, never sitting down. \n\n In the kitchen, at the table, when we weren’t eating, we used to play games. My father would play cards with us: checkers, Chinese checkers and riddles. He would write things down, and draw pictures of things, and we had to figure them out. And that was another way we passed our time. He always made sure we had things to do. And he taught us how to play all the card games, rummy and….things like that. \n\n(Josephine laughs) The radio, always playing: Italian music, Italian soap operas, and my mother crying all the time (chuckles). She used to miss her family. She left her whole family in Italy, came here as a young girl and she never saw them again for many, many years later, she never saw her mother or her father again (Italian music begins softly, grows louder, then fades out)."',
             type: 'audio',
-            audioSrc: 'assets/audios/bell.wav'
+            audioSrc: 'assets/audios/kitchen.mp3'
         },
         {
-            position: { x: 16.2, y: 0, z: -1 },
-            titleText: "Josephine's Memories: Living Room",
+            position: { x: 16.2, y: 0, z: -0.5 },
+            titleText: "Josephine's Memories: Bedroom",
             detailText: "This is the official record text.\n\nIt contains important details.\n\nMore lines of information here.",
             type: 'audio',
-            audioSrc: 'assets/audios/bell.wav'
+            audioSrc: 'assets/audios/bedroom.mp3'
         },
         {
-            position: { x: 18, y: -1, z: 11 },
+            position: { x: 18, y: -1, z: 10.7 },
             titleText: "Josephine's Parents",
             summaryText: "Adolfo (1918), Rosaria (1920)",
             type: 'comparison',
@@ -30,13 +36,13 @@ const CONFIG = {
         {
             position: { x: 20, y: 0, z: 5.5 },
             titleText: "Orchard and Hester St, 1930s vs Today",
-            summaryText: "The left image shows Orchard Street in the 1930s, bustling with pushcart vendors and shoppers. The right image captures the same location today, where the vibrant street market has given way to a quieter scene, reflecting the neighborhood's transformation over time.",
+            summaryText: "",
             type: 'comparison',
             imageSources: ['assets/images/Orchard1.png', 'assets/images/Orchard2.png'],
             currentImageIndex: 0
         },
         {
-            position: { x: -16.3, y: -0.3, z: 6.4 },
+            position: { x: -15.5, y: -0.3, z: 6.4 },
             titleText: "Josephine with family and neighbors",
             summaryText: "1935, 1992",
             type: 'comparison',
@@ -44,7 +50,7 @@ const CONFIG = {
             currentImageIndex: 0
         },
         {
-            position: { x: 2.4, y: -1.9, z: 1 },
+            position: { x: -5, y: -0.5, z: 7.5 },
             titleText: "Orchard St in the 1930s",
             summaryText: "These historic images show Orchard Street as a busy marketplace shaped by immigrant labor and everyday street commerce. Pushcart vendors sold food, sweets, nuts, clothing, jewelry, and tools, making the street an important part of daily life for tenement families.",
             type: 'comparison',
@@ -52,7 +58,7 @@ const CONFIG = {
             currentImageIndex: 0
         },
         {
-            position: { x: -11.5, y: 0, z: 13 },
+            position: { x: -11.5, y: 0.2, z: 13 },
             titleText: "Comparison View",
             summaryText: "Rosaria (second from the right) at a garment factory, 1940",
             type: 'comparison',
@@ -78,15 +84,15 @@ const CONFIG = {
     axesLength: 6,
     axesOrigin: { x: 0, y: 0, z: 0 },
     navigationWaypoints: [
-        { name: "A", position: { x: -7.4, y: -5.6, z: 4 }, rooms: [0, 1] },
-        { name: "B", position: { x: 5.8, y: -5.3, z: 2.9 }, rooms: [1, 2] }
+        { name: "A", position: { x: -7.4, y: -3.6, z: 4 }, rooms: [0, 1] },
+        { name: "B", position: { x: 5.8, y: -3.3, z: 2.9 }, rooms: [1, 2] }
     ],
     navigationWaypointStyle: {
         ringInnerRadius: 0.35,
         ringOuterRadius: 0.55,
-        ringColor: "#9a9a9a",
+        ringColor: "#4aff1a",
         ringOpacity: 0.35,
-        arrowColor: "#a0a0a0",
+        arrowColor: "#4aff1a",
         arrowOpacity: 0.65,
         hoverColor: "#4aff1a",
         hoverRingOpacity: 0.6,
@@ -108,7 +114,6 @@ let navigationWaypoints = [];
 let ui;
 const animationState = { modelDone: false };
 
-// FIXED: Use a string format so Tweakpane's readonly monitor can display it without crashing
 const debugState = {
     cameraPos: "0.00, 0.00, 0.00"
 };
@@ -118,6 +123,7 @@ let panelTextures = [];
 let panelBoxes = [];
 let panelMagnifiers = [];
 let panelPlanes = [];
+let panelHighlightCircles = [];
 let currentRoomIndex = 1;
 
 function preload() {
@@ -216,7 +222,7 @@ function drawPanelBuffer(index) {
                 const waveW = buffer.width - 40;
                 const waveH = 130;
                 buffer.beginShape();
-                for (let i = 0; i < waveform.length; i++) {
+                for (let i = 0; i < waveform.length; i += 10) {
                     const x = map(i, 0, waveform.length, waveX, waveX + waveW);
                     const y = map(waveform[i], -1, 1, waveY + waveH, waveY);
                     buffer.vertex(x, y);
@@ -249,7 +255,6 @@ function drawPanelBuffer(index) {
 
             const layout = getComparisonLayout(buffer);
 
-            // Left: image square
             buffer.noStroke();
             buffer.fill(255, 255, 255, 80);
             buffer.rect(layout.imageRect.x, layout.imageRect.y, layout.imageRect.w, layout.imageRect.h);
@@ -274,13 +279,11 @@ function drawPanelBuffer(index) {
                 buffer.text("No images", layout.imageRect.x + 10, layout.imageRect.y + 10);
             }
 
-            // Bottom hint text
             buffer.textAlign(CENTER, TOP);
-            buffer.fill(0, 0, 0, 180); // Slightly transparent black
-            buffer.textSize(14);
+            buffer.fill(0, 0, 0, 180);
+            buffer.textSize(16);
             buffer.text("press panel to see more", layout.imageRect.x + (layout.imageRect.w / 2), layout.imageRect.y + layout.imageRect.h + 2);
 
-            // Right: text block
             buffer.textAlign(LEFT, TOP);
             buffer.fill(0);
             buffer.textSize(24);
@@ -303,7 +306,7 @@ function getComparisonLayout(buffer) {
     const margin = 20;
     const imageSize = 300;
     const imageX = margin;
-    const imageY = Math.floor((buffer.height - imageSize) / 2) - 8; // Shifted up slightly to fit the hint text
+    const imageY = Math.floor((buffer.height - imageSize) / 2) - 8;
 
     const textX = imageX + imageSize + margin;
     const textY = margin;
@@ -603,17 +606,21 @@ function updateWaypointArrowDirections() {
 
 function createInteractivePanels() {
     CONFIG.interactivePanels.forEach((panelConfig, index) => {
+
+        // --- FEATURE 2: Adjust panel size based on type ---
+        const panelWidth = panelConfig.type === 'official' ? 6 : 4;
+        const panelHeight = panelConfig.type === 'official' ? 4 : 2.67;
+
         const plane = new AFrameP5.Plane({
             x: panelConfig.position.x,
             y: panelConfig.position.y + 2,
             z: panelConfig.position.z,
-            width: 3,
-            height: 2,
+            width: panelWidth,   // Updated dynamically
+            height: panelHeight, // Updated dynamically
             asset: panelTextures[index],
             dynamicTexture: true,
             dynamicTextureWidth: 512,
             dynamicTextureHeight: 341,
-            // Triggered when panel is clicked anywhere!
             clickFunction: function (entity, intersectionInfo) {
                 if (panelConfig.type !== 'comparison') {
                     return;
@@ -629,7 +636,6 @@ function createInteractivePanels() {
                     return;
                 }
 
-                // Advance to the next image and loop back to the start if necessary
                 panelConfig.currentImageIndex = ((panelConfig.currentImageIndex || 0) + 1) % count;
                 drawPanelBuffer(index);
                 console.log(`Switched to image: index ${panelConfig.currentImageIndex}`);
@@ -649,18 +655,33 @@ function createInteractivePanels() {
             updatePanelOrientations();
         });
 
-        let isPanelVisible = false;
+        const highlightCircle = new AFrameP5.Circle({
+            x: panelConfig.position.x,
+            y: panelConfig.position.y,
+            z: panelConfig.position.z,
+            radius: 0.5,
+        });
+
+        highlightCircle.tag.setAttribute("material", {
+            color: "#FFD700",
+            transparent: true,
+            opacity: 0.4,
+            side: "double",
+            depthWrite: false
+        });
+
+        world.add(highlightCircle);
+        panelHighlightCircles.push(highlightCircle);
 
         const magnifierModel = new AFrameP5.GLTF({
             asset: "magnifier",
             x: panelConfig.position.x,
-            y: panelConfig.position.y,
+            y: panelConfig.position.y + 0.3,
             z: panelConfig.position.z,
-            rotateY: 35,
-            rotateX: 180
         });
         world.add(magnifierModel);
         magnifierModel.setScale(0.15, 0.15, 0.15);
+        magnifierModel.setRotation(0, -45, -90);
         panelMagnifiers.push(magnifierModel);
 
         const box = new AFrameP5.Box({
@@ -676,20 +697,29 @@ function createInteractivePanels() {
             enterFunction: () => magnifierModel.setScale(0.2, 0.2, 0.2),
             leaveFunction: () => magnifierModel.setScale(0.15, 0.15, 0.15),
             clickFunction: () => {
-                isPanelVisible = !isPanelVisible;
-                plane.tag.setAttribute('visible', isPanelVisible);
+                // --- FEATURE 1: Allow only one panel open at a time ---
+                const wasVisible = plane.tag.getAttribute('visible');
 
-                if (isPanelVisible) {
+                // Step A: Close ALL panels and pause ALL audio
+                panelPlanes.forEach((p, i) => {
+                    p.tag.setAttribute('visible', false);
+                    const conf = CONFIG.interactivePanels[i];
+                    if (conf.type === 'audio' && conf.loadedSound) {
+                        conf.loadedSound.pause();
+                    }
+                });
+
+                // Step B: If the panel we clicked wasn't already open, open it now
+                if (!wasVisible) {
+                    plane.tag.setAttribute('visible', true);
                     console.log(`Panel ${index + 1} opened.`);
+
                     if (panelConfig.type === 'audio' && panelConfig.loadedSound) {
                         panelConfig.loadedSound.stop();
                         panelConfig.loadedSound.loop();
                     }
                 } else {
                     console.log(`Panel ${index + 1} closed.`);
-                    if (panelConfig.type === 'audio' && panelConfig.loadedSound) {
-                        panelConfig.loadedSound.pause();
-                    }
                 }
             }
         });
@@ -710,9 +740,11 @@ function updatePanelPosition(index) {
     const box = panelBoxes[index];
     const plane = panelPlanes[index];
     const magnifierModel = panelMagnifiers[index];
+    const circle = panelHighlightCircles[index];
 
     if (box) box.setPosition(config.position.x, config.position.y, config.position.z);
     if (magnifierModel) magnifierModel.setPosition(config.position.x, config.position.y, config.position.z);
+    if (circle) circle.setPosition(config.position.x, config.position.y + 0.7, config.position.z);
     if (plane) {
         plane.setPosition(config.position.x, config.position.y + 2, config.position.z);
         updatePanelOrientations();
@@ -737,6 +769,12 @@ function updatePanelOrientations() {
     panelPlanes.forEach((plane) => {
         if (plane && plane.tag) {
             plane.tag.object3D.lookAt(targetPos.x, targetPos.y + 1.6, targetPos.z);
+        }
+    });
+
+    panelHighlightCircles.forEach((circle) => {
+        if (circle && circle.tag) {
+            circle.tag.object3D.lookAt(targetPos.x, targetPos.y + 1.6, targetPos.z);
         }
     });
 }
@@ -870,7 +908,6 @@ function toVec3String(vec) {
 }
 
 function draw() {
-    // FIXED: Properly update the string for the Tweakpane Monitor 
     const cam = document.querySelector("#main-camera");
     if (cam && cam.object3D) {
         const x = cam.object3D.position.x.toFixed(2);
