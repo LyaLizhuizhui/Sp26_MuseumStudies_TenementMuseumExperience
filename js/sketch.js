@@ -13,7 +13,7 @@ const CONFIG = {
             audioSrc: 'assets/audios/bell.wav'
         },
         {
-            position: { x: 3, y: -2, z: 7 },
+            position: { x: 16.2, y: 0, z: -1 },
             titleText: "Josephine's Memories: Living Room",
             detailText: "This is the official record text.\n\nIt contains important details.\n\nMore lines of information here.",
             type: 'audio',
@@ -21,26 +21,42 @@ const CONFIG = {
         },
         {
             position: { x: 18, y: -1, z: 11 },
-            titleText: "Comparison View",
-            summaryText: "Overall comparison summary text goes here.",
+            titleText: "Josephine's Parents",
+            summaryText: "Adolfo (1918), Rosaria (1920)",
             type: 'comparison',
-            imageSources: ['assets/images/josephine1.png', 'assets/images/josephine2.png'],
+            imageSources: ['assets/images/parent1.png', 'assets/images/parent2.png'],
             currentImageIndex: 0
         },
         {
-            position: { x: 16, y: 0, z: -1 },
-            titleText: "Comparison View",
-            summaryText: "Overall comparison summary text goes here.",
+            position: { x: 20, y: 0, z: 5.5 },
+            titleText: "Orchard and Hester St, 1930s vs Today",
+            summaryText: "The left image shows Orchard Street in the 1930s, bustling with pushcart vendors and shoppers. The right image captures the same location today, where the vibrant street market has given way to a quieter scene, reflecting the neighborhood's transformation over time.",
             type: 'comparison',
             imageSources: ['assets/images/Orchard1.png', 'assets/images/Orchard2.png'],
             currentImageIndex: 0
         },
         {
-            position: { x: -11, y: 0, z: 12 },
-            titleText: "Comparison View",
-            summaryText: "Overall comparison summary text goes here.",
+            position: { x: -16.3, y: -0.3, z: 6.4 },
+            titleText: "Josephine with family and neighbors",
+            summaryText: "1935, 1992",
             type: 'comparison',
-            imageSources: ['assets/images/parent1.png', 'assets/images/parent2.png'],
+            imageSources: ['assets/images/josephine1.png', 'assets/images/josephine2.png'],
+            currentImageIndex: 0
+        },
+        {
+            position: { x: 2.4, y: -1.9, z: 1 },
+            titleText: "Orchard St in the 1930s",
+            summaryText: "These historic images show Orchard Street as a busy marketplace shaped by immigrant labor and everyday street commerce. Pushcart vendors sold food, sweets, nuts, clothing, jewelry, and tools, making the street an important part of daily life for tenement families.",
+            type: 'comparison',
+            imageSources: ['assets/images/occupation1.jpg', 'assets/images/occupation2.jpg', 'assets/images/occupation3.jpg', 'assets/images/occupation4.jpg'],
+            currentImageIndex: 0
+        },
+        {
+            position: { x: -11.5, y: 0, z: 13 },
+            titleText: "Comparison View",
+            summaryText: "Rosaria (second from the right) at a garment factory, 1940",
+            type: 'comparison',
+            imageSources: ['assets/images/factory1.png'],
             currentImageIndex: 0
         }
     ],
@@ -208,7 +224,7 @@ function drawPanelBuffer(index) {
 
             buffer.fill(255);
             buffer.noStroke();
-            buffer.textSize(18);
+            buffer.textSize(20);
             buffer.text(config.detailText || "", 20, 215, buffer.width - 40, buffer.height - 235);
             break;
 
@@ -218,7 +234,7 @@ function drawPanelBuffer(index) {
             buffer.textSize(26);
             buffer.text(config.titleText || "", 20, 18);
 
-            buffer.textSize(18);
+            buffer.textSize(20);
             buffer.text(config.detailText || "", 20, 70, buffer.width - 40, buffer.height - 90);
             break;
 
@@ -265,10 +281,10 @@ function drawPanelBuffer(index) {
             // Right: text block
             buffer.textAlign(LEFT, TOP);
             buffer.fill(0);
-            buffer.textSize(20);
+            buffer.textSize(24);
             buffer.text(config.titleText || "", layout.textRect.x, layout.textRect.y, layout.textRect.w);
 
-            buffer.textSize(16);
+            buffer.textSize(20);
             buffer.text(config.summaryText || "", layout.textRect.x, layout.textRect.y + 32, layout.textRect.w, layout.textRect.h - 32);
             break;
     }
