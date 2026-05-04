@@ -192,7 +192,6 @@ function toggleAudioPlayback(panelConfig) {
 function togglePanelOpen(panelConfig, plane, index) {
     const wasVisible = plane.tag.getAttribute('visible');
 
-    // Step A: Close ALL panels and pause ALL audio
     panelPlanes.forEach((p, i) => {
         p.tag.setAttribute('visible', false);
         const conf = CONFIG.interactivePanels[i];
@@ -201,7 +200,6 @@ function togglePanelOpen(panelConfig, plane, index) {
         }
     });
 
-    // Step B: If the panel we clicked wasn't already open, open it now
     if (!wasVisible) {
         plane.tag.setAttribute('visible', true);
         console.log(`Panel ${index + 1} opened.`);
@@ -330,7 +328,6 @@ function drawPanelBuffer(index) {
             if (config.fft) {
                 const waveform = config.fft.waveform();
                 const waveX = 20;
-                // Move waveform down slightly if title is multi-line
                 const audioTitleW = buffer.textWidth(audioTitle);
                 const audioLines = Math.ceil(audioTitleW / audioMaxW) || 1;
                 const waveY = 18 + (audioLines * 30) + 15;
@@ -399,13 +396,11 @@ function drawPanelBuffer(index) {
             const officialMaxW = buffer.width - 40;
 
             buffer.textSize(22);
-            // Draw title with word wrap
             buffer.text(officialTitle, 20, 18, officialMaxW);
 
-            // Calculate dynamic Y position to avoid overlap
             const officialTitleW = buffer.textWidth(officialTitle);
             const officialLines = Math.ceil(officialTitleW / officialMaxW) || 1;
-            const officialDescY = 18 + (officialLines * 26) + 13; // 26 is approx line height, 13 is gap
+            const officialDescY = 18 + (officialLines * 26) + 13;
 
             buffer.textSize(14);
             buffer.text(config.detailText || "", 20, officialDescY, officialMaxW, buffer.height - officialDescY - 10);
@@ -452,7 +447,6 @@ function drawPanelBuffer(index) {
             const iconSize = 16;
             const gap = 8;
 
-            // Calculate total width to center everything
             const totalWidth = iconSize + gap + textWidth;
             const startX = layout.imageRect.x + (layout.imageRect.w / 2) - (totalWidth / 2);
             const drawY = layout.imageRect.y + layout.imageRect.h + 5;
@@ -474,7 +468,7 @@ function drawPanelBuffer(index) {
 
             const compTitleWidth = buffer.textWidth(compTitle);
             const compTitleLines = Math.ceil(compTitleWidth / layout.textRect.w) || 1;
-            const compDynamicY = layout.textRect.y + (compTitleLines * 28) + 12; // 28 is approx line height
+            const compDynamicY = layout.textRect.y + (compTitleLines * 28) + 12;
 
             buffer.textSize(16);
             buffer.text(config.summaryText || "", layout.textRect.x, compDynamicY, layout.textRect.w, layout.textRect.h - (compDynamicY - layout.textRect.y));
@@ -814,7 +808,6 @@ function updateWaypointArrowDirections() {
 function createInteractivePanels() {
     CONFIG.interactivePanels.forEach((panelConfig, index) => {
 
-        // --- FEATURE 2: Adjust panel size based on type ---
         const panelWidth = panelConfig.type === 'official' ? 4 : 4;
         const panelHeight = panelConfig.type === 'official' ? 5 : 2.67;
 
@@ -882,7 +875,7 @@ function createInteractivePanels() {
             'official': '#F6CE46',
             'comparison': '#7FB5FA'
         };
-        const circleColor = typeColors[panelConfig.type] || "#FFD700"; // Default to gold if type not found
+        const circleColor = typeColors[panelConfig.type] || "#FFD700";
 
         const highlightCircle = new AFrameP5.Circle({
             x: panelConfig.position.x,
