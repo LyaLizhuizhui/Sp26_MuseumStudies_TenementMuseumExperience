@@ -19,7 +19,7 @@ const CONFIG = {
             audioSrc: 'assets/audios/radio.m4a'
         },
         {
-            position: { x: 3.3, y: -1.8, z: 7.5 },
+            position: { x: -1.7, y: -0.6, z: 11.1 },
             titleText: "Josephine's Memories: Kitchen",
             detailText: '"I remember sitting around the table in the kitchen under the window and we would – my mother would have made us a fried egg or something on a roll with butter. And my father would put the ketchup on it. That was a treat every Saturday. Had to be Saturday or a Sunday, we would sit around and enjoy that roll with the butter. My mother’d be moving around, always cooking, serving, doing things, busy as a bee, never sitting down. \n\n In the kitchen, at the table, when we weren’t eating, we used to play games. My father would play cards with us: checkers, Chinese checkers and riddles. He would write things down, and draw pictures of things, and we had to figure them out. And that was another way we passed our time. He always made sure we had things to do. And he taught us how to play all the card games, rummy and… things like that."',
             type: 'audio',
