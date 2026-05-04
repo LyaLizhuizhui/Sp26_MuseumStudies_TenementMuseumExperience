@@ -8,7 +8,7 @@ const CONFIG = {
         {
             position: { x: 0, y: -1, z: 1 },
             titleText: "The Baldizzis' Life in the Tenement",
-            detailText: 'The Lower East Side is historically known as an immigrant neighborhood. For generations, it served as a receiving place for people arriving from other countries, as well as from other parts of the United States. Many of these newcomers found their first New York homes in tenements. \n\nThe Baldizzis, a Catholic family from Sicily, lived at 97 Orchard Street in the 1930s. Their story took place during both a low point in American immigration and the height of the Great Depression. \n\nThis virtual tour explores how the family’s story connects with the larger historical events of this era. We will see how the Baldizzis experienced a defining period in the nation’s past.',
+            detailText: 'The Lower East Side is historically known as an immigrant neighborhood. For generations, it served as a receiving place for people arriving from other countries, as well as from other parts of the United States. Many of these newcomers found their first New York homes in tenements. \n\nThe Baldizzis, a Catholic family from Sicily, lived at 97 Orchard Street in the 1930s. Their story took place during both a low point in American immigration and the height of the Great Depression. \n\nThis virtual tour explores how the family’s story connects with the larger historical events of this era. We will see how the Baldizzis experienced a defining period in the nation’s past. \n\nPress the magnifiers to explore!',
             type: 'official'
         },
         {
