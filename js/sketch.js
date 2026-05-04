@@ -245,6 +245,8 @@ function setup() {
     });
     world.add(sky);
 
+    world.camera.cameraEl.removeAttribute('wasd-controls');
+
     ui = getUiElements();
 
     for (let i = 0; i < CONFIG.interactivePanels.length; i++) {
