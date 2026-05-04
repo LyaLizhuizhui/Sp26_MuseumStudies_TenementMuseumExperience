@@ -13,15 +13,22 @@ const CONFIG = {
         },
         {
             position: { x: 3.3, y: 0, z: 11 },
-            titleText: "Josephine's Memories: Kitchen",
-            detailText: '"I remember sitting around the table in the kitchen under the window and we would – my mother would have made us a fried egg or something on a roll with butter. And my father would put the ketchup on it. That was a treat every Saturday. Had to be Saturday or a Sunday, we would sit around and enjoy that roll with the butter. My mother’d be moving around, always cooking, serving, doing things, busy as a bee, never sitting down. \n\n In the kitchen, at the table, when we weren’t eating, we used to play games. My father would play cards with us: checkers, Chinese checkers and riddles. He would write things down, and draw pictures of things, and we had to figure them out. And that was another way we passed our time. He always made sure we had things to do. And he taught us how to play all the card games, rummy and….things like that. \n\n(Josephine laughs) The radio, always playing: Italian music, Italian soap operas, and my mother crying all the time (chuckles). She used to miss her family. She left her whole family in Italy, came here as a young girl and she never saw them again for many, many years later, she never saw her mother or her father again (Italian music begins softly, grows louder, then fades out)."',
+            titleText: "Josephine's Memories: Radio",
+            detailText: '"(Josephine laughs) The radio, always playing: Italian music, Italian soap operas, and my mother crying all the time (chuckles). She used to miss her family. She left her whole family in Italy, came here as a young girl and she never saw them again for many, many years later, she never saw her mother or her father again (Italian music begins softly, grows louder, then fades out)."',
             type: 'audio',
-            audioSrc: 'assets/audios/kitchen.mp3'
+            audioSrc: 'assets/audios/radio.m4a'
+        },
+        {
+            position: { x: 3.3, y: -1.8, z: 7.5 },
+            titleText: "Josephine's Memories: Kitchen",
+            detailText: '"I remember sitting around the table in the kitchen under the window and we would – my mother would have made us a fried egg or something on a roll with butter. And my father would put the ketchup on it. That was a treat every Saturday. Had to be Saturday or a Sunday, we would sit around and enjoy that roll with the butter. My mother’d be moving around, always cooking, serving, doing things, busy as a bee, never sitting down. \n\n In the kitchen, at the table, when we weren’t eating, we used to play games. My father would play cards with us: checkers, Chinese checkers and riddles. He would write things down, and draw pictures of things, and we had to figure them out. And that was another way we passed our time. He always made sure we had things to do. And he taught us how to play all the card games, rummy and… things like that."',
+            type: 'audio',
+            audioSrc: 'assets/audios/kitchen.m4a'
         },
         {
             position: { x: 16.2, y: 0, z: -0.5 },
             titleText: "Josephine's Memories: Bedroom",
-            detailText: '"In the back room, my brother and I slept on a folding bed. Every night, my mother would open it up, or my father, and my brother would sleep at one end and I slept at the other end. Every morning, we would have to fold it up, cover it very nicely, and put it back against the wall. \n\nThe other thing in that bedroom was a trunk that my brother and I enjoyed playing with. When I say playing, I mean standing on top of it. That was our stage. I became Claudette Colbert, and he became somebody else. Whatever movie was out, we were acting. We would do a song and dance or something, whatever was amusing to us. \n\nSometimes in the trunk, there must have been my mother’s clothing, hats, and whatever. We would take them out, wear them, put them on, high heels, you know, and have a lot of fun. \n\nRita Bonfiglio, who lived upstairs in the tenement, used to come down and play with us too. There would be three of us, and we would fight. I wanted to be Claudette Colbert. She wanted to be Claudette Colbert. We had a ball. We just enjoyed doing that. \n\nIn the back room, there was a shaft, a window facing a shaft. Across the way was another window, and back there, the Rosenthals lived. I can still see Mrs. Rosenthal in the air shaft window, waving to me, motioning for me to come in and turn on the lights because it was the Sabbath, the Jewish holiday, and they were not allowed to touch the electricity. \n\nIt made me very proud to have to do that. I used to feel good that she chose me to do that job for her. I can still see her today. The vision of her in that window has never left my memory.',
+            detailText: '"In the back room, my brother and I slept on a folding bed. Every night, my mother would open it up, or my father, and my brother would sleep at one end and I slept at the other end. Every morning, we would have to fold it up, cover it very nicely, and put it back against the wall. \n\nThe other thing in that bedroom was a trunk that my brother and I enjoyed playing with. When I say playing, I mean standing on top of it. That was our stage. I became Claudette Colbert, and he became somebody else. Whatever movie was out, we were acting. We would do a song and dance or something, whatever was amusing to us. \n\nSometimes in the trunk, there must have been my mother’s clothing, hats, and whatever. We would take them out, wear them, put them on, high heels, you know, and have a lot of fun. \n\nRita Bonfiglio, who lived upstairs in the tenement, used to come down and play with us too. There would be three of us, and we would fight. I wanted to be Claudette Colbert. She wanted to be Claudette Colbert. We had a ball. We just enjoyed doing that. \n\nIn the back room, there was a shaft, a window facing a shaft. Across the way was another window, and back there, the Rosenthals lived. I can still see Mrs. Rosenthal in the air shaft window, waving to me, motioning for me to come in and turn on the lights because it was the Sabbath, the Jewish holiday, and they were not allowed to touch the electricity. \n\nIt made me very proud to have to do that. I used to feel good that she chose me to do that job for her. I can still see her today. The vision of her in that window has never left my memory."',
             type: 'audio',
             audioSrc: 'assets/audios/bedroom.mp3'
         },
@@ -36,9 +43,9 @@ const CONFIG = {
         {
             position: { x: 20, y: 0, z: 5.5 },
             titleText: "Orchard and Hester St",
-            summaryText: "1930s and Today",
+            summaryText: "1930s and Today:\nPushcart vendors sold food, sweets, nuts, clothing, jewelry, and tools, making the street an important part of daily life for tenement families.",
             type: 'comparison',
-            imageSources: ['assets/images/Orchard1.png', 'assets/images/Orchard2.png'],
+            imageSources: ['assets/images/Orchard1.png', 'assets/images/Orchard2.png', 'assets/images/occupation1.jpg', 'assets/images/occupation2.jpg', 'assets/images/occupation3.jpg', 'assets/images/occupation4.jpg'],
             currentImageIndex: 0
         },
         {
@@ -47,14 +54,6 @@ const CONFIG = {
             summaryText: "with family and neighbors, 1935 and 1992",
             type: 'comparison',
             imageSources: ['assets/images/josephine1.png', 'assets/images/josephine2.png'],
-            currentImageIndex: 0
-        },
-        {
-            position: { x: -5, y: -0.5, z: 7.5 },
-            titleText: "Orchard St in the 1930s",
-            summaryText: "These historic images show Orchard Street as a busy marketplace shaped by immigrant labor and everyday street commerce. Pushcart vendors sold food, sweets, nuts, clothing, jewelry, and tools, making the street an important part of daily life for tenement families.",
-            type: 'comparison',
-            imageSources: ['assets/images/occupation1.jpg', 'assets/images/occupation2.jpg', 'assets/images/occupation3.jpg', 'assets/images/occupation4.jpg'],
             currentImageIndex: 0
         },
         {
