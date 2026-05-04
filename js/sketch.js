@@ -65,7 +65,7 @@ const CONFIG = {
             currentImageIndex: 0
         }
     ],
-    modelStart: { x: 10, y: -5, z: -20 },
+    modelStart: { x: -5, y: -9, z: -20 },
     modelEnd: { x: 11, y: 8, z: 9 },
     animDuration: 4200,
     hudTitlePosition: { x: 0, y: 0.35, z: -1.2 },
@@ -1081,7 +1081,7 @@ function attachEntranceAnimations() {
 
     apartment.tag.setAttribute("animation__rotation", {
         property: "rotation",
-        from: "100 15 0",
+        from: "-200 65 90",
         to: "0 375 0",
         dur: CONFIG.animDuration,
         easing: "easeInOutCubic",
