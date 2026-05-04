@@ -65,7 +65,7 @@ const CONFIG = {
             currentImageIndex: 0
         }
     ],
-    modelStart: { x: 0, y: 8, z: -40 },
+    modelStart: { x: 10, y: -5, z: -20 },
     modelEnd: { x: 11, y: 8, z: 9 },
     animDuration: 4200,
     hudTitlePosition: { x: 0, y: 0.35, z: -1.2 },
@@ -74,14 +74,6 @@ const CONFIG = {
     hudLoadingScale: { x: 1.2, y: 1.2, z: 1.2 },
     hudPlayPosition: { x: 0, y: -0.1, z: -1 },
     hudPlayScale: { x: 0.5, y: 0.5, z: 0.5 },
-    hudColor: "#ffffff",
-    triangleColor: "#ffcc00",
-    gridSize: { width: 5, height: 5 },
-    gridPosition: { x: 0, y: 0, z: 0 },
-    gridRotation: { x: -90, y: 0, z: 0 },
-    gridColor: "#444444",
-    axesLength: 6,
-    axesOrigin: { x: 0, y: 0, z: 0 },
     navigationWaypoints: [
         { name: "A", position: { x: -7.4, y: -3.6, z: 4 }, rooms: [0, 1] },
         { name: "B", position: { x: 5.8, y: -3.3, z: 2.9 }, rooms: [1, 2] }
@@ -109,6 +101,7 @@ const DEBUG = false;
 
 let world;
 let apartment;
+let sky;
 let roomMarkers = [];
 let navigationWaypoints = [];
 let ui;
@@ -246,6 +239,12 @@ function preload() {
 function setup() {
     noCanvas();
     world = new AFrameP5.World("VRScene");
+
+    sky = new AFrameP5.Sky({
+        asset: 'assets/images/map.png'
+    });
+    world.add(sky);
+
     ui = getUiElements();
 
     for (let i = 0; i < CONFIG.interactivePanels.length; i++) {
@@ -274,7 +273,6 @@ function setup() {
     });
     world.add(apartment);
 
-    injectDebugHelpers();
     createRoomMarkers();
     createNavigationWaypoints();
     createInteractivePanels();
@@ -614,23 +612,6 @@ function setHudVisibility(isVisible) {
             waypoint.anchor.tag.setAttribute("visible", isVisible);
         }
     });
-}
-
-function injectDebugHelpers() {
-    const grid = new AFrameP5.Plane({
-        width: CONFIG.gridSize.width,
-        height: CONFIG.gridSize.height,
-        x: CONFIG.gridPosition.x,
-        y: CONFIG.gridPosition.y,
-        z: CONFIG.gridPosition.z
-    });
-    grid.setRotation(CONFIG.gridRotation.x, CONFIG.gridRotation.y, CONFIG.gridRotation.z);
-    grid.tag.setAttribute("material", {
-        color: CONFIG.gridColor,
-        wireframe: true,
-        opacity: 0.6
-    });
-    world.add(grid);
 }
 
 function createRoomMarkers() {
