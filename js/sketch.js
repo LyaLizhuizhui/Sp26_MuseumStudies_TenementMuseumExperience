@@ -366,7 +366,7 @@ function drawPanelBuffer(index) {
                 const detailHeight = buffer.height - detailY - AUDIO_TRANSCRIPT.contentPaddingBottom;
 
                 buffer.fill(255);
-                const lines = wrapTextToLines(buffer, config.detailText || "", audioMaxW);
+                const lines = wrapTextToLines(buffer, config.detailText || "", audioMaxW - 10);
                 const totalHeight = lines.length * AUDIO_TRANSCRIPT.lineHeight;
                 const scrollRange = Math.max(0, totalHeight - detailHeight);
                 const scrollOffset = getAudioScrollOffset(config, scrollRange);
