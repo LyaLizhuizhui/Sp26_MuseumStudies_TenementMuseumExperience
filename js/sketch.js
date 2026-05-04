@@ -89,9 +89,9 @@ const CONFIG = {
     navigationWaypointStyle: {
         ringInnerRadius: 0.35,
         ringOuterRadius: 0.55,
-        ringColor: "#4aff1a",
+        ringColor: "#53D769",
         ringOpacity: 0.35,
-        arrowColor: "#4aff1a",
+        arrowColor: "#53D769",
         arrowOpacity: 0.65,
         hoverColor: "#4aff1a",
         hoverRingOpacity: 0.6,
@@ -105,9 +105,10 @@ const CONFIG = {
     }
 };
 
+const DEBUG = false;
+
 let world;
 let apartment;
-let magnifier;
 let roomMarkers = [];
 let navigationWaypoints = [];
 let ui;
@@ -115,9 +116,6 @@ const animationState = { modelDone: false };
 let hudReady = false;
 let fingerIcon;
 
-const debugState = {
-    cameraPos: "0.00, 0.00, 0.00"
-};
 
 let panelGraphics = [];
 let panelTextures = [];
@@ -633,29 +631,6 @@ function injectDebugHelpers() {
         opacity: 0.6
     });
     world.add(grid);
-
-    const axes = new AFrameP5.Box({
-        x: CONFIG.axesOrigin.x,
-        y: CONFIG.axesOrigin.y,
-        z: CONFIG.axesOrigin.z,
-        width: 0.01,
-        height: 0.01,
-        depth: 0.01
-    });
-    axes.tag.appendChild(createAxisLine({ x: 0, y: 0, z: 0 }, { x: CONFIG.axesLength, y: 0, z: 0 }, "#ff0000"));
-    axes.tag.appendChild(createAxisLine({ x: 0, y: 0, z: 0 }, { x: 0, y: CONFIG.axesLength, z: 0 }, "#00ff00"));
-    axes.tag.appendChild(createAxisLine({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: CONFIG.axesLength }, "#0000ff"));
-    world.add(axes);
-}
-
-function createAxisLine(start, end, color) {
-    const line = document.createElement("a-entity");
-    line.setAttribute("line", {
-        start: toVec3String(start),
-        end: toVec3String(end),
-        color
-    });
-    return line;
 }
 
 function createRoomMarkers() {
@@ -1043,16 +1018,11 @@ function updatePanelOrientations() {
 }
 
 function setupDebugPanel() {
-    if (!window.Pane) {
+    if (!DEBUG || !window.Pane) {
         return;
     }
 
     const pane = new window.Pane({ title: "A-Frame Debug" });
-
-    pane.addBinding(debugState, 'cameraPos', {
-        readonly: true,
-        title: "User Camera (XYZ)"
-    });
 
     pane.addFolder({ title: "" });
 
@@ -1171,14 +1141,6 @@ function toVec3String(vec) {
 }
 
 function draw() {
-    const cam = document.querySelector("#main-camera");
-    if (cam && cam.object3D) {
-        const x = cam.object3D.position.x.toFixed(2);
-        const y = cam.object3D.position.y.toFixed(2);
-        const z = cam.object3D.position.z.toFixed(2);
-        debugState.cameraPos = `${x}, ${y}, ${z}`;
-    }
-
     for (let i = 0; i < CONFIG.interactivePanels.length; i++) {
         if (panelPlanes[i] && panelPlanes[i].tag.getAttribute('visible') && CONFIG.interactivePanels[i].type === 'audio') {
             drawPanelBuffer(i);
